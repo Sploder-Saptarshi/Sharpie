@@ -17,23 +17,35 @@ public class Memory
     // The actual RAM chip
     private readonly byte[] _ram = new byte[65536];
 
+    /// <summary>
+    /// Reads a byte from memory as an 8 bit integer
+    /// </summary>
+    /// <param name="address">The address of the byte, usually Program Counter + 1</param>
     public byte ReadByte(ushort address)
     {
         return _ram[address]; //ushort caps at last ram index anyways
     }
+
+    public byte ReadByte(int address) => ReadByte((ushort)address);
 
     public void WriteByte(ushort address, byte value)
     {
         _ram[address] = value;
     }
 
+    /// <summary>
+    /// Formats two bytes into a 16 bit integer from memory. Little Endian.
+    /// </summary>
+    /// <param name="address">The address of the low byte of the word, usually Program Counter + 1</param>
     public ushort ReadWord(ushort address)
     {
         var lowByte = _ram[address];
         var highByte = _ram[address+1];
 
-        return (ushort)((highByte << 8) & lowByte);
+        return (ushort)((highByte << 8) | lowByte);
     }
+
+    public ushort ReadWord(int address) => ReadWord((ushort)address);
     
     public void WriteWord(ushort address, ushort value)
     {
