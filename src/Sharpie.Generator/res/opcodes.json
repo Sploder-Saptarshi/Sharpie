@@ -48,6 +48,7 @@
     { "hex": "0x76", "name": "RET",    "len": 1, "logic": null },
     { "hex": "0x77", "name": "PUSH",   "len": 2, "logic": null },
     { "hex": "0x78", "name": "POP",    "len": 2, "logic": null },
+    { "hex": "0x80", "name": "RND",    "len": 3, "logic": null, "family": true },
   
     { "hex": "0xF0", "name": "DRAW",   "len": 4, "logic": null },
     { "hex": "0xF1", "name": "CLS",    "len": 2, "logic": null },
@@ -55,9 +56,9 @@
     { "hex": "0xF3", "name": "PLAY",   "len": 3, "logic": null },
     { "hex": "0xF4", "name": "STOP",   "len": 2, "logic": null },
     { "hex": "0xF5", "name": "INPUT",  "len": 3, "logic": null },
-    { "hex": "0xF6", "name": "RND",    "len": 3, "logic": null },
     { "hex": "0xF7", "name": "TEXT",   "len": 3, "logic": null },
     { "hex": "0xF8", "name": "ATTR",   "len": 2, "logic": null },
+    { "hex": "0xF9", "name": "SWC",    "len": 2, "logic": null },
   
     { "hex": "0xFE", "name": "PREFIX", "len": 1, "logic": null },
     { "hex": "0xFF", "name": "HALT",   "len": 1, "logic": "IsHalted = true;" }

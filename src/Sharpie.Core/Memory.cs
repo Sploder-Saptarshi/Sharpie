@@ -7,12 +7,12 @@ public class Memory
 {
     // Memory map:
     public const ushort RomStart = 0x0000; // 0x0000-0x7FFF Cartridge rom (exactly 32KB)
-    public const ushort VramStart = 0x8000; // 0x8000-0xDFFF VRAM (exactly 24KB)
-    // Note that the vram fits the entire screen. No framebuffer allowed.
-    public const ushort AudioRamStart = 0xE000; // 0xE000-0xEFFF Audio Ram (4KB)
-    public const ushort WorkRamStart = 0xF000; // 0xF000-0xFFFF Work Ram (4KB)
-    public const ushort ColorPaletteStart = 0xFF00; //0xFF00-0xFF0F is the color palette, mapped within Work Ram.
-    // 16 bytes, indexed. The next 224(?) bytes (0xFF0F-0xFFFF) are just insurance (boot mode flags, expansion, etc.)
+    public const ushort OamStart = 0xC000; // Object Address Memory. Holds data about which sprite is drawn where. Exactly 2KB
+    public const ushort WorkRamStart = 0xC800; // Work RAM for patchwork and variables. 10KB.
+
+    // Note that the color palette is the last 16 memory slots of WRAM.
+    public const ushort ColorPaletteStart = 0xEFF0; // 16 memory slots, one per color. Indexed as pointers to internal colors.
+    public const ushort AudioRamStart = 0xF000; // 4KB of Audio Ram. No samples. Deal with it.
 
     // The actual RAM chip
     private readonly byte[] _ram = new byte[65536];
@@ -33,6 +33,8 @@ public class Memory
         _ram[address] = value;
     }
 
+    public void WriteByte(int address, byte value) => WriteByte((ushort)address, value);
+
     /// <summary>
     /// Formats two bytes into a 16 bit integer from memory. Little Endian.
     /// </summary>
@@ -40,21 +42,23 @@ public class Memory
     public ushort ReadWord(ushort address)
     {
         var lowByte = _ram[address];
-        var highByte = _ram[address+1];
+        var highByte = _ram[address + 1];
 
         return (ushort)((highByte << 8) | lowByte);
     }
 
     public ushort ReadWord(int address) => ReadWord((ushort)address);
-    
+
     public void WriteWord(ushort address, ushort value)
     {
         var lowByte = (byte)(value & 0xFF); //bitmask not strictly necessary but oh well
         var highByte = (byte)((value >> 8) & 0xFF); //again
 
         _ram[address] = lowByte;
-        _ram[address+1] = highByte;
+        _ram[address + 1] = highByte;
     }
+
+    public void WriteWord(int address, ushort value) => WriteWord((ushort)address, value);
 
     // Good for dumping roms to memory
     public void LoadData(ushort startAddress, byte[] data)

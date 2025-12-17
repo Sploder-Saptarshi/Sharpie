@@ -1,5 +1,3 @@
-using System;
-
 namespace Sharpie.Core;
 
 public partial class Cpu
@@ -284,7 +282,6 @@ public partial class Cpu
         _memory.WriteWord(addr, (ushort)result);
     }
 
-
     private partial void Execute_IDIV(byte opcode, ref ushort pcDelta)
     {
         var addr = _memory.ReadWord(_pc + 1);
@@ -440,6 +437,101 @@ public partial class Cpu
         {
             _pc = target;
             pcDelta = 0;
-        }      
+        }
     }
+
+    private partial void Execute_JGT(byte opcode, ref ushort pcDelta)
+    {
+        var target = _memory.ReadWord(_pc + 1);
+        var zero = IsFlagOn(CpuFlags.Zero);
+        var negative = IsFlagOn(CpuFlags.Negative);
+        var overflow = IsFlagOn(CpuFlags.Overflow);
+
+        if (!zero && negative == overflow)
+        {
+            _pc = target;
+            pcDelta = 0;
+        }
+    }
+
+    private partial void Execute_JLT(byte opcode, ref ushort pcDelta)
+    {
+        var target = _memory.ReadWord(_pc + 1);
+        var negative = IsFlagOn(CpuFlags.Negative);
+        var overflow = IsFlagOn(CpuFlags.Overflow);
+
+        if (negative != overflow)
+        {
+            _pc = target;
+            pcDelta = 0;
+        }
+    }
+
+    private partial void Execute_CALL(byte opcode, ref ushort pcDelta)
+    {
+        var target = _memory.ReadWord(_pc + 1);
+        var returnAddress = (ushort)(_pc + 3);
+        _sp -= 2;
+        _memory.WriteWord(_sp, returnAddress);
+        _pc = target;
+        pcDelta = 0;
+    }
+
+    private partial void Execute_RET(byte opcode, ref ushort pcDelta)
+    {
+        var returnAddress = _memory.ReadWord(_sp);
+        _sp += 2;
+        _pc = returnAddress;
+        pcDelta = 0;
+    }
+
+    private partial void Execute_PUSH(byte opcode, ref ushort pcDelta)
+    {
+        var x = _memory.ReadByte(_pc + 1);
+        _sp -= 2;
+        _memory.WriteWord(_sp, _registers[x]);
+    }
+
+    private partial void Execute_POP(byte opcode, ref ushort pcDelta)
+    {
+        var x = _memory.ReadByte(_pc + 1);
+        var value = _memory.ReadWord(_sp);
+        _sp += 2;
+        _registers[x] = value;
+    }
+
+    // TODO: Implement all these
+    private partial void Execute_DRAW(byte opcode, ref ushort pcDelta)
+    {
+        var xyPacked = _memory.ReadByte(_pc + 1);
+        var spriteId = _memory.ReadByte(_pc + 2);
+
+        var addr = Memory.OamStart + OamRegister;
+        OamRegister += 2;
+        _memory.WriteByte(addr, xyPacked);
+        _memory.WriteByte(addr + 1, spriteId);
+    }
+
+    private partial void Execute_CLS(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_VBLNK(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_PLAY(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_STOP(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_INPUT(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_RND(byte opcode, ref ushort pcDelta)
+    {
+        var x = IndexFromOpcode(opcode);
+        var max = _memory.ReadWord(_pc + 1);
+        _registers[x] = (ushort)_rng.Next(max);
+    }
+
+    private partial void Execute_TEXT(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_ATTR(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_SWC(byte opcode, ref ushort pcDelta) { }
 }

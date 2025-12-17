@@ -7,32 +7,43 @@ internal enum CpuFlags : ushort
     Carry = 0x01,
     Zero = 0x02,
     Overflow = 0x04,
-    Negative = 0x08
+    Negative = 0x08,
 }
 
 public partial class Cpu
 {
+    private const int MaxOamSlots = 1024;
     private readonly Memory _memory;
+    private readonly IMotherboard _mobo;
 
-    public Cpu(Memory memory)
+    public Cpu(Memory memory, IMotherboard motherboard)
     {
         _memory = memory;
+        _mobo = motherboard;
         Reset();
     }
 
     private ushort _pc;
     private ushort _sp;
     private ushort[] _registers = new ushort[16];
-    
+    private readonly Random _rng = new();
+    private ushort _oamReg = Memory.OamStart;
+    private ushort OamRegister
+    {
+        get => _oamReg;
+        set => _oamReg = value < MaxOamSlots ? value : (ushort)0;
+    }
+
     // Shorthand for the last register
     // layout (left to right):
     // 0-Carry (unsigned overflow, result >=65535 or < 0), 0x01
     // 1-Zero (result exactly zero), 0x02
     // 2-Overflow (signed), positive + positive = negative, 0x04
     // 3-Negative (highest bit is 1), 0x08
-    private ushort FlagRegister { 
+    private ushort FlagRegister
+    {
         get => _registers[15];
-        set => _registers[15] = value; 
+        set => _registers[15] = value;
     }
 
     private void UpdateFlags(int result, ushort op1, ushort op2, bool subtraction = false)
@@ -40,9 +51,11 @@ public partial class Cpu
         FlagRegister &= 0xFFF0;
         ushort flags = 0;
 
-        if (result > ushort.MaxValue || result < 0) flags |= (ushort)CpuFlags.Carry; // carry
+        if (result > ushort.MaxValue || result < 0)
+            flags |= (ushort)CpuFlags.Carry; // carry
 
-        if ((ushort)result == 0) flags |= (ushort)CpuFlags.Zero; // zero
+        if ((ushort)result == 0)
+            flags |= (ushort)CpuFlags.Zero; // zero
 
         var signedResult = (short)result;
         var signedOp1 = (short)op1;
@@ -50,8 +63,9 @@ public partial class Cpu
 
         if (((signedOp1 ^ signedResult) & (signedOp2 ^ signedResult) & 0x8000) != 0) // what the fuck
             flags |= (ushort)CpuFlags.Overflow; // overflow
-        
-        if ((result & 0x8000) != 0) flags |= (ushort)CpuFlags.Negative;
+
+        if ((result & 0x8000) != 0)
+            flags |= (ushort)CpuFlags.Negative;
 
         FlagRegister = flags;
     }
@@ -60,9 +74,11 @@ public partial class Cpu
     {
         FlagRegister &= 0xFFF0;
 
-        if (result == 0) FlagRegister |= (ushort)CpuFlags.Zero;
+        if (result == 0)
+            FlagRegister |= (ushort)CpuFlags.Zero;
 
-        if ((result & 0x8000) != 0) FlagRegister |= (ushort)CpuFlags.Negative;
+        if ((result & 0x8000) != 0)
+            FlagRegister |= (ushort)CpuFlags.Negative;
     }
 
     private void SetFlag(bool value, CpuFlags flag)
@@ -79,6 +95,7 @@ public partial class Cpu
     }
 
     public bool IsHalted { get; private set; }
+
     public void Reset()
     {
         Array.Clear(_registers, 0, _registers.Length);
@@ -93,8 +110,9 @@ public partial class Cpu
 
     public void Cycle()
     {
-        if (IsHalted) return;
-        
+        if (IsHalted)
+            return;
+
         byte opcode = _memory.ReadByte(_pc);
 
         ExecuteOpcode(opcode, out ushort pcDelta);
@@ -104,7 +122,8 @@ public partial class Cpu
 
     private void Advance(int pcDelta)
     {
-        if (IsHalted) return;
+        if (IsHalted)
+            return;
         _pc += (ushort)pcDelta;
     }
 

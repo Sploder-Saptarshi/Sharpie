@@ -223,6 +223,11 @@ public partial class Cpu {
                 Execute_POP(opcode, ref pcDelta);
                 break;
 
+            case >= 0x80 and <= 0x8F:
+                pcDelta = 4;
+                Execute_RND(opcode, ref pcDelta);
+                break;
+
             case 0xF0: //DRAW
                 pcDelta = 5;
                 Execute_DRAW(opcode, ref pcDelta);
@@ -253,11 +258,6 @@ public partial class Cpu {
                 Execute_INPUT(opcode, ref pcDelta);
                 break;
 
-            case 0xF6: //RND
-                pcDelta = 4;
-                Execute_RND(opcode, ref pcDelta);
-                break;
-
             case 0xF7: //TEXT
                 pcDelta = 4;
                 Execute_TEXT(opcode, ref pcDelta);
@@ -266,6 +266,11 @@ public partial class Cpu {
             case 0xF8: //ATTR
                 pcDelta = 3;
                 Execute_ATTR(opcode, ref pcDelta);
+                break;
+
+            case 0xF9: //SWC
+                pcDelta = 3;
+                Execute_SWC(opcode, ref pcDelta);
                 break;
 
             case 0xFE: //PREFIX
@@ -329,14 +334,15 @@ public partial class Cpu {
     private partial void Execute_RET(byte opcode, ref ushort pcDelta);
     private partial void Execute_PUSH(byte opcode, ref ushort pcDelta);
     private partial void Execute_POP(byte opcode, ref ushort pcDelta);
+    private partial void Execute_RND(byte opcode, ref ushort pcDelta);
     private partial void Execute_DRAW(byte opcode, ref ushort pcDelta);
     private partial void Execute_CLS(byte opcode, ref ushort pcDelta);
     private partial void Execute_VBLNK(byte opcode, ref ushort pcDelta);
     private partial void Execute_PLAY(byte opcode, ref ushort pcDelta);
     private partial void Execute_STOP(byte opcode, ref ushort pcDelta);
     private partial void Execute_INPUT(byte opcode, ref ushort pcDelta);
-    private partial void Execute_RND(byte opcode, ref ushort pcDelta);
     private partial void Execute_TEXT(byte opcode, ref ushort pcDelta);
     private partial void Execute_ATTR(byte opcode, ref ushort pcDelta);
+    private partial void Execute_SWC(byte opcode, ref ushort pcDelta);
     private partial void Execute_PREFIX(byte opcode, ref ushort pcDelta);
 }
