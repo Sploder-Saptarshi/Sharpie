@@ -11,7 +11,7 @@ public class Motherboard : IMotherboard
         _cpu = new Cpu(_memory, this);
     }
 
-    public void LoadRom(byte[] rom) => _memory.LoadData(0, rom);
+    public void LoadData(byte[] rom) => _memory.LoadData(0, rom);
 
     public void AwaitVBlank()
     {
