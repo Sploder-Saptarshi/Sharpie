@@ -12,6 +12,5 @@ public interface IMotherboard
     ushort GetInputState(byte controllerIndex);
 
     void SwapColor(byte oldIndex, byte newIndex);
-
     void StopSystem();
 }
