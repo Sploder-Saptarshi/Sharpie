@@ -50,7 +50,7 @@
     { "hex": "0x78", "name": "POP",    "len": 2, "logic": null },
     { "hex": "0x80", "name": "RND",    "len": 3, "logic": null, "family": true },
   
-    { "hex": "0xF0", "name": "DRAW",   "len": 4, "logic": null },
+    { "hex": "0xF0", "name": "DRAW",   "len": 3, "logic": null },
     { "hex": "0xF1", "name": "CLS",    "len": 2, "logic": null },
     { "hex": "0xF2", "name": "VBLNK",  "len": 1, "logic": null },
     { "hex": "0xF3", "name": "PLAY",   "len": 3, "logic": null },

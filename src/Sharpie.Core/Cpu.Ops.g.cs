@@ -229,7 +229,7 @@ public partial class Cpu {
                 break;
 
             case 0xF0: //DRAW
-                pcDelta = 5;
+                pcDelta = 4;
                 Execute_DRAW(opcode, ref pcDelta);
                 break;
 

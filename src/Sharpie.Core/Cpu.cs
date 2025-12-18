@@ -12,7 +12,7 @@ internal enum CpuFlags : ushort
 
 public partial class Cpu
 {
-    private const int MaxOamSlots = 1024;
+    private const int MaxOamSlots = 512;
     private readonly Memory _memory;
     private readonly IMotherboard _mobo;
 
@@ -44,6 +44,11 @@ public partial class Cpu
     {
         get => _registers[15];
         set => _registers[15] = value;
+    }
+    private ushort SpriteAttributeRegister
+    {
+        get => _registers[14];
+        set => _registers[14] = value;
     }
 
     private void UpdateFlags(int result, ushort op1, ushort op2, bool subtraction = false)

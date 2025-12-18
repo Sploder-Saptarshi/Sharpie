@@ -502,13 +502,15 @@ public partial class Cpu
 
     private partial void Execute_DRAW(byte opcode, ref ushort pcDelta)
     {
-        var xyPacked = _memory.ReadByte(_pc + 1);
+        var (x, y) = ReadRegisterArgs();
         var spriteId = _memory.ReadByte(_pc + 2);
-
+        var attributes = (byte)SpriteAttributeRegister;
         var addr = Memory.OamStart + OamRegister;
-        OamRegister += 2;
-        _memory.WriteByte(addr, xyPacked);
-        _memory.WriteByte(addr + 1, spriteId);
+        OamRegister += 4;
+        _memory.WriteByte(addr, (byte)_registers[x]);
+        _memory.WriteByte(addr + 1, (byte)_registers[y]);
+        _memory.WriteByte(addr + 2, spriteId);
+        _memory.WriteByte(addr + 3, attributes);
     }
 
     // TODO: Implement all these
