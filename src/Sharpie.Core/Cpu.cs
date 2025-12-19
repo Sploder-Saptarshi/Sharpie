@@ -35,7 +35,7 @@ public partial class Cpu
     }
 
     // Shorthand for the last register
-    // layout (left to right):
+    // layout (right to left):
     // 0-Carry (unsigned overflow, result >=65535 or < 0), 0x01
     // 1-Zero (result exactly zero), 0x02
     // 2-Overflow (signed), positive + positive = negative, 0x04
@@ -45,6 +45,12 @@ public partial class Cpu
         get => _registers[15];
         set => _registers[15] = value;
     }
+
+    // Shorthand for the second-to-last register
+    // layout (right to left):
+    // 0-Flip horizontally (put pixels in vram in reverse per 8 pixels)
+    // 1-Flip vertically (swap each pixel with its equivalent to the last place
+    // - first becomes last, second becomes second-to-last etc.)
     private ushort SpriteAttributeRegister
     {
         get => _registers[14];

@@ -536,4 +536,22 @@ public partial class Cpu
     private partial void Execute_ATTR(byte opcode, ref ushort pcDelta) { }
 
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta) { }
+
+    private partial void Execute_FLPH(byte opcode, ref ushort pcDelta)
+    {
+        var value = _memory.ReadByte(_pc + 1);
+        if (value != 0)
+            SpriteAttributeRegister |= 0x01; // true
+        else
+            SpriteAttributeRegister &= 0xFE; // false
+    }
+
+    private partial void Execute_FLPV(byte opcode, ref ushort pcDelta)
+    {
+        var value = _memory.ReadByte(_pc + 1);
+        if (value != 0)
+            SpriteAttributeRegister |= 0x02; // true
+        else
+            SpriteAttributeRegister &= 0xFD; // false
+    }
 }

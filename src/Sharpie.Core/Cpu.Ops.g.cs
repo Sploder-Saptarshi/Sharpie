@@ -273,6 +273,16 @@ public partial class Cpu {
                 Execute_SWC(opcode, ref pcDelta);
                 break;
 
+            case 0xFA: //FLPH
+                pcDelta = 3;
+                Execute_FLPH(opcode, ref pcDelta);
+                break;
+
+            case 0xFB: //FLPV
+                pcDelta = 3;
+                Execute_FLPV(opcode, ref pcDelta);
+                break;
+
             case 0xFE: //PREFIX
                 pcDelta = 2;
                 Execute_PREFIX(opcode, ref pcDelta);
@@ -344,5 +354,7 @@ public partial class Cpu {
     private partial void Execute_TEXT(byte opcode, ref ushort pcDelta);
     private partial void Execute_ATTR(byte opcode, ref ushort pcDelta);
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta);
+    private partial void Execute_FLPH(byte opcode, ref ushort pcDelta);
+    private partial void Execute_FLPV(byte opcode, ref ushort pcDelta);
     private partial void Execute_PREFIX(byte opcode, ref ushort pcDelta);
 }

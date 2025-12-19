@@ -59,7 +59,9 @@
     { "hex": "0xF7", "name": "TEXT",   "len": 3, "logic": null },
     { "hex": "0xF8", "name": "ATTR",   "len": 2, "logic": null },
     { "hex": "0xF9", "name": "SWC",    "len": 2, "logic": null },
-  
+    { "hex": "0xFA", "name": "FLPH",   "len": 2, "logic": null },
+    { "hex": "0xFB", "name": "FLPV",   "len": 2, "logic": null },
+
     { "hex": "0xFE", "name": "PREFIX", "len": 1, "logic": null },
     { "hex": "0xFF", "name": "HALT",   "len": 1, "logic": "IsHalted = true;" }
   ]
