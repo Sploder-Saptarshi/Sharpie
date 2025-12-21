@@ -1,7 +1,9 @@
 namespace Sharpie.Core;
 
-public class Ppu
+public partial class Ppu
 {
+    private const int DisplayHeight = 255;
+    private const int DisplayWidth = 255;
     private const ushort OamStart = Memory.OamStart;
     private const ushort SpriteMemoryStart = 0xBFFF;
     private int _currentBuffer = 0;
@@ -43,11 +45,27 @@ public class Ppu
 
     public void FlipBuffers() => _currentBuffer = 1 - _currentBuffer;
 
-    public void WriteBackBuffer(int offset, byte value) =>
-        _vRam.WriteByte(RenderStart + offset, value);
+    private void WritePixel(int x, int y, byte colorIndex)
+    {
+        if (x < 0 || x >= DisplayWidth || y < 0 || y >= DisplayHeight)
+            return;
+
+        var pixelIndex = y * 256 + x;
+        var byteOffset = pixelIndex / 2;
+        var isHighNibble = (pixelIndex & 1) == 0;
+
+        var existingPixel = _vRam.ReadByte(RenderStart + byteOffset);
+        if (isHighNibble)
+            existingPixel = (byte)((existingPixel & 0x0F) | (colorIndex << 4));
+        else
+            existingPixel = (byte)((existingPixel & 0xF0) | (colorIndex & 0x0F));
+
+        _vRam.WriteByte(RenderStart + byteOffset, existingPixel);
+    }
 
     public void VBlank()
     {
+        _vRam.ClearRange(RenderStart, RenderStart + 32768);
         for (int oamIndex = OamStart; oamIndex < OamStart + 512; oamIndex += 4)
         {
             var x = _systemRam.ReadByte(oamIndex);
@@ -57,21 +75,8 @@ public class Ppu
 
             GetSprite(spriteId, attributes);
             for (int row = 0; row < 8; row++)
-            {
-                var displayY = y + row;
-                if (displayY >= 256)
-                    break;
-
-                var rowBaseVramSlot = (displayY * 128) + (x / 2);
-                for (int column = 0; column < 8; column += 2)
-                {
-                    var pixelIndex = (row * 8) + column;
-                    var pixel1 = _spriteBuffer[pixelIndex];
-                    var pixel2 = _spriteBuffer[pixelIndex + 1];
-                    var packed = (byte)((pixel1 << 4) | pixel2);
-                    WriteBackBuffer(rowBaseVramSlot + (column / 2), packed);
-                }
-            }
+            for (int column = 0; column < 8; column += 2)
+                WritePixel(x + column, y + row, _spriteBuffer[row * 8 + column]);
         }
     }
 }

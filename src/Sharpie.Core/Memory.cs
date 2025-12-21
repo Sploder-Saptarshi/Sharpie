@@ -65,4 +65,6 @@ public class Memory
     {
         Array.Copy(data, 0, _contents, startAddress, data.Length);
     }
+
+    public void ClearRange(int from, int amount) => Array.Clear(_contents, from, amount);
 }

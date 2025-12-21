@@ -535,7 +535,12 @@ public partial class Cpu
 
     private partial void Execute_ATTR(byte opcode, ref ushort pcDelta) { }
 
-    private partial void Execute_SWC(byte opcode, ref ushort pcDelta) { }
+    private partial void Execute_SWC(byte opcode, ref ushort pcDelta)
+    {
+        var oldIndex = _memory.ReadByte(_pc + 1);
+        var newIndex = _memory.ReadByte(_pc + 2);
+        _memory.WriteByte(Memory.ColorPaletteStart + oldIndex, newIndex);
+    }
 
     private partial void Execute_FLPH(byte opcode, ref ushort pcDelta)
     {
