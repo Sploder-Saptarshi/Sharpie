@@ -513,7 +513,6 @@ public partial class Cpu
         _memory.WriteByte(addr + 3, attributes);
     }
 
-    // TODO: Implement all these
     private partial void Execute_CLS(byte opcode, ref ushort pcDelta)
     {
         var packed = (byte)((_memory.ReadByte(_pc + 1) << 4) | (_memory.ReadByte(_pc + 1) & 0x0F));
@@ -525,9 +524,39 @@ public partial class Cpu
         _mobo.AwaitVBlank();
     }
 
-    private partial void Execute_PLAY(byte opcode, ref ushort pcDelta) { }
+    private partial void Execute_PLAY(byte opcode, ref ushort pcDelta)
+    {
+        var (rChannel, rNote) = ReadRegisterArgs();
+        var channel = (byte)_registers[rChannel];
+        var note = (byte)_registers[rNote];
+        if (channel > 7)
+            channel = (byte)7;
 
-    private partial void Execute_STOP(byte opcode, ref ushort pcDelta) { }
+        var frequency = NoteToFrequency(note);
+        var baseAddr = (Memory.AudioRamStart + (channel * 4));
+
+        _memory.WriteByte(baseAddr, (byte)(frequency & 0xFF));
+        _memory.WriteByte(baseAddr + 1, (byte)(frequency >> 8));
+        _memory.WriteByte(baseAddr + 2, (byte)255);
+        _memory.WriteByte(baseAddr + 3, 0x01);
+        return;
+
+        ushort NoteToFrequency(byte note)
+        {
+            return (ushort)(440 * Math.Pow(2, (note - 69) / 12.0)); // standard midi note to hz
+        }
+    }
+
+    private partial void Execute_STOP(byte opcode, ref ushort pcDelta)
+    {
+        var rChannel = _memory.ReadByte(_pc + 1);
+        var channel = (byte)_registers[rChannel];
+        if (channel > 7)
+            channel = (byte)7;
+
+        var baseAddr = (Memory.AudioRamStart + (channel * 4));
+        _memory.WriteByte(baseAddr + 3, 0x00);
+    }
 
     private partial void Execute_INPUT(byte opcode, ref ushort pcDelta)
     {

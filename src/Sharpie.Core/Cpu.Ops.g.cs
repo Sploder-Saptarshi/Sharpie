@@ -244,7 +244,7 @@ public partial class Cpu {
                 break;
 
             case 0xF3: //PLAY
-                pcDelta = 4;
+                pcDelta = 3;
                 Execute_PLAY(opcode, ref pcDelta);
                 break;
 

@@ -6,11 +6,14 @@ public class Motherboard : IMotherboard
 {
     private readonly Cpu _cpu;
     private readonly Ppu _ppu;
+    private readonly Apu _apu;
     private readonly Memory _memory;
     private Texture2D _screenTexture;
     private Image _screenImage;
     private byte _fontColorReg = 1;
     private byte _fontSizeReg = 0;
+    private AudioStream _stream;
+    private float[] _writeBuffer = new float[441];
 
     public Motherboard()
     {
@@ -19,6 +22,7 @@ public class Motherboard : IMotherboard
         oam.Fill(0xFF);
         _cpu = new Cpu(_memory, this);
         _ppu = new Ppu(_memory);
+        _apu = new Apu(_memory);
     }
 
     public void LoadData(byte[] rom) => _memory.LoadData(0, rom);
@@ -47,6 +51,29 @@ public class Motherboard : IMotherboard
             {
                 Raylib.UpdateTexture(_screenTexture, pDisp);
             }
+        }
+    }
+
+    public void SetupAudio()
+    {
+        Raylib.SetAudioStreamBufferSizeDefault(1764);
+        Raylib.InitAudioDevice();
+        // 44100Hz 32bit float mono
+        _stream = Raylib.LoadAudioStream(44100, 32, 1);
+        _writeBuffer = new float[1764]; // 10ms of audio at a time
+        Raylib.PlayAudioStream(_stream);
+        Raylib.SetMasterVolume(1f);
+    }
+
+    public unsafe void UpdateAudio()
+    {
+        if (!Raylib.IsAudioStreamProcessed(_stream))
+            return;
+
+        _apu.FillBuffer(_writeBuffer);
+        fixed (float* pBuffer = _writeBuffer)
+        {
+            Raylib.UpdateAudioStream(_stream, pBuffer, 1764);
         }
     }
 
@@ -118,28 +145,26 @@ public class Motherboard : IMotherboard
     public void Run()
     {
         SetupDisplay();
-        byte x = 10;
-        byte y = 10;
+        SetupAudio();
+        // _memory.WriteByte(0xF000, 0x0B); // Low
+        // _memory.WriteByte(0xF001, 0x02); // High
+        // _memory.WriteByte(0xF002, 0xFF);
+        // _memory.WriteByte(0xF003, 0x01);
+        _memory.WriteByte(0xF008, 0x00); // Low
+        _memory.WriteByte(0xF009, 0x01); // High
+        _memory.WriteByte(0xF00a, 0xFF);
+        _memory.WriteByte(0xF00b, 0x01);
 
         while (!Raylib.WindowShouldClose())
         {
             _ppu.FillBuffer(0);
             for (var i = 0; i < 16000; i++)
                 _cpu.Cycle();
-            ushort input = GetInputState(0);
-            if ((input & 1) != 0)
-                y--;
-            if ((input & 2) != 0)
-                y++;
-            if ((input & 4) != 0)
-                x--;
-            if ((input & 8) != 0)
-                x++;
 
-            DrawChar(0, 0, 2);
             AwaitVBlank();
             _ppu.FlipBuffers();
             UpdateDisplay();
+            UpdateAudio();
 
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.Black);
