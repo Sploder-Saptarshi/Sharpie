@@ -95,7 +95,7 @@ public partial class Ppu
     public void FillBuffer(byte colorIndex)
     {
         Span<byte> vramSpan = _vRam.Slice(RenderStart, 32768);
-        vramSpan.Fill(colorIndex);
+        vramSpan.Fill((byte)((colorIndex << 4) | colorIndex));
     }
 
     public void DumpVram(ushort start, int width, int height)

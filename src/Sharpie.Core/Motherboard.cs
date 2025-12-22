@@ -8,12 +8,17 @@ public class Motherboard : IMotherboard
     private readonly Ppu _ppu;
     private readonly Apu _apu;
     private readonly Memory _memory;
+
     private Texture2D _screenTexture;
-    private Image _screenImage;
-    private byte _fontColorReg = 1;
-    private byte _fontSizeReg = 0;
+    private RenderTexture2D _target;
     private AudioStream _stream;
     private float[] _writeBuffer = new float[441];
+
+    private byte _fontColorReg = 1;
+    private byte _fontSizeReg = 0;
+
+    private const int MusicPointerAddress = 0x0004;
+    private int _musicStart = 0;
 
     public Motherboard()
     {
@@ -25,33 +30,100 @@ public class Motherboard : IMotherboard
         _apu = new Apu(_memory);
     }
 
-    public void LoadData(byte[] rom) => _memory.LoadData(0, rom);
+    public void LoadCartridge(string path)
+    {
+        var loadAttempt = Cartridge.Load(path);
+        if (!loadAttempt.HasValue)
+            return; // softlock like how the DS froze if you took the cartridge out
+
+        var cart = loadAttempt.Value;
+        _cpu.LoadPalette(cart.HeaderPalette);
+        for (var i = 0; i < cart.RomData.Length; i++)
+        {
+            _memory.WriteByte(i, cart.RomData[i]);
+        }
+
+        _musicStart = cart.MusicAddress;
+    }
 
     public void SetupDisplay()
     {
-        Raylib.InitWindow(512, 512, "Sharpie");
+        // const int InternalRes = 256;
+        // var screenW = Raylib.GetMonitorWidth(0);
+        // var screenH = Raylib.GetMonitorHeight(0);
+        //
+        // var scale = (screenH / InternalRes) - 1;
+        // if (scale < 1)
+        //     scale = 1;
+        //
+        // var windowSize = InternalRes * scale;
+        // Raylib.InitWindow(windowSize, windowSize, "Sharpie");
+        // Raylib.SetTargetFPS(60);
+        // _target = Raylib.LoadRenderTexture(InternalRes, InternalRes);
+        //
+        // var blank = Raylib.GenImageColor(InternalRes, InternalRes, Color.Blank);
+        // _screenTexture = Raylib.LoadTextureFromImage(blank);
+        // Raylib.UnloadImage(blank);
+        //
+        // Raylib.SetTextureFilter(_screenTexture, TextureFilter.Point);
+        // Raylib.SetTextureFilter(_target.Texture, TextureFilter.Point);
+        // Raylib.InitWindow(512, 512, "Sharpie");
+        // Raylib.SetTargetFPS(60);
+        const int internalRes = 256;
+
+        // 1. Hard-initialize a temporary window to get monitor info
+        Raylib.InitWindow(800, 600, "Sharpie Initializing...");
+
+        var screenH = Raylib.GetMonitorHeight(0);
+        // Let's get a reasonable scale (80% of screen height)
+        int scale = (int)((screenH * 0.8f) / internalRes);
+        if (scale < 1)
+            scale = 1;
+
+        var windowSize = internalRes * scale;
+
+        // 2. Resize to our calculated beautiful size
+        Raylib.SetWindowSize(windowSize, windowSize);
+        Raylib.SetWindowTitle("Sharpie Virtual Console");
         Raylib.SetTargetFPS(60);
-        _screenImage = new Image
-        {
-            Width = 256,
-            Height = 256,
-            Mipmaps = 1,
-            Format = PixelFormat.UncompressedR8G8B8A8,
-        };
-        _screenTexture = Raylib.LoadTextureFromImage(_screenImage);
+
+        _target = Raylib.LoadRenderTexture(internalRes, internalRes);
+
+        // 3. Create the texture that actually holds the PPU bytes
+        var blank = Raylib.GenImageColor(internalRes, internalRes, Color.Blank);
+        _screenTexture = Raylib.LoadTextureFromImage(blank);
+        Raylib.UnloadImage(blank);
+
         Raylib.SetTextureFilter(_screenTexture, TextureFilter.Point);
+        Raylib.SetTextureFilter(_target.Texture, TextureFilter.Point);
+        Raylib.SetWindowPosition(1000, 1000);
+        // _screenImage = new Image
+        // {
+        //     Width = 256,
+        //     Height = 256,
+        //     Mipmaps = 1,
+        //     Format = PixelFormat.UncompressedR8G8B8A8,
+        // };
+        // _screenTexture = Raylib.LoadTextureFromImage(_screenImage);
+        // Raylib.SetTextureFilter(_screenTexture, TextureFilter.Point);
     }
 
     public void UpdateDisplay()
     {
-        byte[] displaydata = _ppu.GetFrame();
-        unsafe
-        {
-            fixed (byte* pDisp = displaydata)
-            {
-                Raylib.UpdateTexture(_screenTexture, pDisp);
-            }
-        }
+        Raylib.BeginTextureMode(_target);
+        _ppu.FillBuffer(0);
+        AwaitVBlank();
+        _ppu.FlipBuffers();
+        Raylib.EndTextureMode();
+
+        // byte[] displaydata = _ppu.GetFrame();
+        // unsafe
+        // {
+        //     fixed (byte* pDisp = displaydata)
+        //     {
+        //         Raylib.UpdateTexture(_screenTexture, pDisp);
+        //     }
+        // }
     }
 
     public void SetupAudio()
@@ -94,7 +166,7 @@ public class Motherboard : IMotherboard
 
     public ushort GetInputState(byte controllerIndex)
     {
-        ushort state = 0; // TODO: Switch case for two controller schemes
+        ushort state = 0;
 
         if (Raylib.IsKeyDown(KeyboardKey.Up))
             state |= 1;
@@ -134,7 +206,7 @@ public class Motherboard : IMotherboard
 
     public void StopSystem()
     {
-        throw new NotImplementedException();
+        _cpu.Halt();
     }
 
     public void SwapColor(byte oldIndex, byte newIndex)
@@ -142,43 +214,63 @@ public class Motherboard : IMotherboard
         _memory.WriteByte(Memory.ColorPaletteStart + oldIndex, newIndex);
     }
 
+    private unsafe void RenderBufferAsTexture(byte[] bufferData)
+    {
+        AwaitVBlank();
+        _ppu.FlipBuffers();
+        fixed (byte* pPixels = bufferData)
+        {
+            Raylib.UpdateTexture(_screenTexture, pPixels);
+        }
+        Raylib.BeginTextureMode(_target);
+        Raylib.DrawTexture(_screenTexture, 0, 0, Color.White);
+        Raylib.EndTextureMode();
+    }
+
     public void Run()
     {
         SetupDisplay();
         SetupAudio();
-        // _memory.WriteByte(0xF000, 0x0B); // Low
-        // _memory.WriteByte(0xF001, 0x02); // High
-        // _memory.WriteByte(0xF002, 0xFF);
-        // _memory.WriteByte(0xF003, 0x01);
-        _memory.WriteByte(0xF008, 0x00); // Low
-        _memory.WriteByte(0xF009, 0x01); // High
-        _memory.WriteByte(0xF00a, 0xFF);
-        _memory.WriteByte(0xF00b, 0x01);
-
+        var windowSize = _target.Texture.Width * ((Raylib.GetScreenHeight() / 256));
+        _memory.WriteByte(Memory.ColorPaletteStart + 1, 10);
         while (!Raylib.WindowShouldClose())
         {
-            _ppu.FillBuffer(0);
             for (var i = 0; i < 16000; i++)
                 _cpu.Cycle();
 
-            AwaitVBlank();
-            _ppu.FlipBuffers();
-            UpdateDisplay();
+            //UpdateDisplay();
             UpdateAudio();
+            DrawChar(10, 10, 0);
+
+            Raylib.BeginTextureMode(_target);
+            Raylib.ClearBackground(Color.Black);
+            var frameData = _ppu.GetFrame();
+            RenderBufferAsTexture(frameData);
+            Raylib.EndTextureMode();
 
             Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.Black);
+            Raylib.ClearBackground(Color.DarkGray);
+            var sourceRec = new Rectangle(0, 0, _target.Texture.Width, -_target.Texture.Height);
+            var destRec = new Rectangle(0, 0, Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
             Raylib.DrawTexturePro(
-                _screenTexture,
-                new Rectangle(0, 0, 256, 256),
-                new Rectangle(0, 0, 512, 512),
-                new System.Numerics.Vector2(0, 0),
+                _target.Texture,
+                sourceRec,
+                destRec,
+                System.Numerics.Vector2.Zero,
                 0f,
                 Color.White
             );
             Raylib.EndDrawing();
         }
 
+        Cleanup();
+    }
+
+    private void Cleanup()
+    {
+        Raylib.UnloadTexture(_screenTexture);
+        Raylib.UnloadRenderTexture(_target);
+        Raylib.CloseAudioDevice();
         Raylib.CloseWindow();
     }
 }

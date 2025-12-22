@@ -101,6 +101,8 @@ public partial class Cpu
 
     public bool IsHalted { get; private set; }
 
+    public void Halt() => IsHalted = true;
+
     public void Reset()
     {
         Array.Clear(_registers, 0, _registers.Length);
@@ -113,11 +115,11 @@ public partial class Cpu
         IsHalted = false;
     }
 
-    private void LoadPalette()
+    public void LoadPalette(byte[] colorPalette)
     {
         for (int i = 0; i < 16; i++)
         {
-            _memory.WriteByte(Memory.ColorPaletteStart + i, (byte)i);
+            _memory.WriteByte(Memory.ColorPaletteStart + i, colorPalette[16]);
         }
     }
 
