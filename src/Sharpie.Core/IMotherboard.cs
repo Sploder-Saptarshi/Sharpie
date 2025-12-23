@@ -8,6 +8,8 @@ public interface IMotherboard
 
     void PlayNote(byte channel, byte note);
     void StopChannel(byte channel);
+    void StopAllSounds();
+    void StartSequencer(ushort address);
 
     ushort GetInputState(byte controllerIndex);
 

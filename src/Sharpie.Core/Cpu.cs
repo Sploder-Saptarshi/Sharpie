@@ -157,7 +157,7 @@ SP: 0x{_sp:X4}
     /// </summary>
     private (int x, int y) ReadRegisterArgs()
     {
-        var args = _memory.ReadByte((ushort)(_pc + 1));
+        var args = _memory.ReadByte((_pc + 1));
         var rX = (args >> 4) & 0x0F;
         var rY = args & 0x0F;
 

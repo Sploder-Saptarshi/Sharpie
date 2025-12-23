@@ -531,20 +531,7 @@ public partial class Cpu
         var note = (byte)_registers[rNote];
         if (channel > 7)
             channel = (byte)7;
-
-        var frequency = NoteToFrequency(note);
-        var baseAddr = (Memory.AudioRamStart + (channel * 4));
-
-        _memory.WriteByte(baseAddr, (byte)(frequency & 0xFF));
-        _memory.WriteByte(baseAddr + 1, (byte)(frequency >> 8));
-        _memory.WriteByte(baseAddr + 2, (byte)255);
-        _memory.WriteByte(baseAddr + 3, 0x01);
-        return;
-
-        ushort NoteToFrequency(byte note)
-        {
-            return (ushort)(440 * Math.Pow(2, (note - 69) / 12.0)); // standard midi note to hz
-        }
+        _mobo.PlayNote(channel, note);
     }
 
     private partial void Execute_STOP(byte opcode, ref ushort pcDelta)
@@ -553,9 +540,7 @@ public partial class Cpu
         var channel = (byte)_registers[rChannel];
         if (channel > 7)
             channel = (byte)7;
-
-        var baseAddr = (Memory.AudioRamStart + (channel * 4));
-        _memory.WriteByte(baseAddr + 3, 0x00);
+        _mobo.StopChannel(channel);
     }
 
     private partial void Execute_INPUT(byte opcode, ref ushort pcDelta)
@@ -610,5 +595,17 @@ public partial class Cpu
             SpriteAttributeRegister |= 0x02; // true
         else
             SpriteAttributeRegister &= 0xFD; // false
+    }
+
+    private partial void Execute_SONG(byte opcode, ref ushort pcDelta)
+    {
+        var x = IndexFromOpcode(opcode);
+        var songAddr = _registers[x];
+        _mobo.StartSequencer(songAddr);
+    }
+
+    private partial void Execute_MUTE(byte opcode, ref ushort pcDelta)
+    {
+        _mobo.StopAllSounds();
     }
 }

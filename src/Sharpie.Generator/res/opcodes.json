@@ -50,6 +50,7 @@
     { "hex": "0x78", "name": "POP",    "len": 2, "logic": null },
     { "hex": "0x80", "name": "RND",    "len": 3, "logic": null, "family": true },
   
+    { "hex": "0xA0", "name": "SONG",   "len": 1, "logic": null, "family": true},
     { "hex": "0xF0", "name": "DRAW",   "len": 3, "logic": null },
     { "hex": "0xF1", "name": "CLS",    "len": 2, "logic": null },
     { "hex": "0xF2", "name": "VBLNK",  "len": 1, "logic": null },
@@ -61,6 +62,7 @@
     { "hex": "0xF9", "name": "SWC",    "len": 2, "logic": null },
     { "hex": "0xFA", "name": "FLPH",   "len": 2, "logic": null },
     { "hex": "0xFB", "name": "FLPV",   "len": 2, "logic": null },
+    { "hex": "0xFC", "name": "MUTE",   "len": 1, "logic": null },
 
     { "hex": "0xFE", "name": "PREFIX", "len": 1, "logic": null },
     { "hex": "0xFF", "name": "HALT",   "len": 1, "logic": "IsHalted = true;" }

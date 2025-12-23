@@ -228,6 +228,11 @@ public partial class Cpu {
                 Execute_RND(opcode, ref pcDelta);
                 break;
 
+            case >= 0xA0 and <= 0xAF:
+                pcDelta = 2;
+                Execute_SONG(opcode, ref pcDelta);
+                break;
+
             case 0xF0: //DRAW
                 pcDelta = 4;
                 Execute_DRAW(opcode, ref pcDelta);
@@ -281,6 +286,11 @@ public partial class Cpu {
             case 0xFB: //FLPV
                 pcDelta = 3;
                 Execute_FLPV(opcode, ref pcDelta);
+                break;
+
+            case 0xFC: //MUTE
+                pcDelta = 2;
+                Execute_MUTE(opcode, ref pcDelta);
                 break;
 
             case 0xFE: //PREFIX
@@ -345,6 +355,7 @@ public partial class Cpu {
     private partial void Execute_PUSH(byte opcode, ref ushort pcDelta);
     private partial void Execute_POP(byte opcode, ref ushort pcDelta);
     private partial void Execute_RND(byte opcode, ref ushort pcDelta);
+    private partial void Execute_SONG(byte opcode, ref ushort pcDelta);
     private partial void Execute_DRAW(byte opcode, ref ushort pcDelta);
     private partial void Execute_CLS(byte opcode, ref ushort pcDelta);
     private partial void Execute_VBLNK(byte opcode, ref ushort pcDelta);
@@ -356,5 +367,6 @@ public partial class Cpu {
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta);
     private partial void Execute_FLPH(byte opcode, ref ushort pcDelta);
     private partial void Execute_FLPV(byte opcode, ref ushort pcDelta);
+    private partial void Execute_MUTE(byte opcode, ref ushort pcDelta);
     private partial void Execute_PREFIX(byte opcode, ref ushort pcDelta);
 }
