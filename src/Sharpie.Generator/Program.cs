@@ -18,7 +18,7 @@ sb.AppendLine("        switch (opcode) {");
 
 foreach (var op in ops)
 {
-    var start = Convert.ToInt32(op.Hex, 16);
+    var start = op.IntHex;
     var end = op.Family ? start + 15 : start;
 
     if (start == end)
@@ -61,11 +61,35 @@ sb.AppendLine("}");
 File.WriteAllText("./src/Sharpie.Core/Cpu.Ops.g.cs", sb.ToString());
 Console.WriteLine("Opcode switch generated successfully. Sanity saved.");
 
+sb.Clear();
+sb.AppendLine("// auto-generated");
+sb.AppendLine("namespace Sharpie.Sdk.Asm;");
+sb.AppendLine("");
+sb.AppendLine("public static class InstructionSet");
+sb.AppendLine("{");
+sb.AppendLine("");
+sb.AppendLine("    private static Dictionary<string, (int Length, int Hex)> OpcodeTable = new()");
+sb.AppendLine("    {");
+
+foreach (var op in ops)
+{
+    sb.AppendLine($"        {{ \"{op.Name}\", ({op.Len}, {op.IntHex}) }},");
+}
+sb.AppendLine("    };");
+sb.AppendLine("");
+sb.AppendLine("    public static int GetOpcodeLength(string name)");
+sb.AppendLine("        => OpcodeTable[name].Length;");
+sb.AppendLine("    public static int GetOpcodeHex(string name)");
+sb.AppendLine("        => OpcodeTable[name].Hex;");
+sb.AppendLine("}");
+File.WriteAllText("./src/Sharpie.Sdk/Asm/InstructionSet.g.cs", sb.ToString());
+Console.WriteLine("Assembler opcode table generated successfuly. Great success!");
+
 return;
 
 class Opcode
 {
-    public int IntHex => int.Parse(Hex);
+    public int IntHex => Convert.ToInt32(Hex, 16);
     public string Hex { get; set; }
     public string Name { get; set; }
     public int Len { get; set; }
@@ -83,4 +107,3 @@ class Opcode
         Family = family;
     }
 }
-
