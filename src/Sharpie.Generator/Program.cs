@@ -69,13 +69,15 @@ sb.AppendLine("public static class InstructionSet");
 sb.AppendLine("{");
 sb.AppendLine("");
 sb.AppendLine(
-    "    private static Dictionary<string, (int Length, int Hex, int RequiredWords)> OpcodeTable = new()"
+    "    private static Dictionary<string, (int Length, int Hex, int RequiredWords, bool IsFamily)> OpcodeTable = new()"
 );
 sb.AppendLine("    {");
 
 foreach (var op in ops)
 {
-    sb.AppendLine($"        {{ \"{op.Name}\", ({op.Len}, {op.IntHex}, {op.Words}) }},");
+    sb.AppendLine(
+        $"        {{ \"{op.Name}\", ({op.Len}, {op.IntHex}, {op.Words}, {op.Family.ToString().ToLower()}) }},"
+    );
 }
 sb.AppendLine("    };");
 sb.AppendLine("");
@@ -87,6 +89,9 @@ sb.AppendLine("        => OpcodeTable.ContainsKey(name) ? OpcodeTable[name].Hex 
 sb.AppendLine("");
 sb.AppendLine("    public static int? GetOpcodeWords(string name)");
 sb.AppendLine("        => OpcodeTable.ContainsKey(name) ? OpcodeTable[name].RequiredWords : null;");
+sb.AppendLine("");
+sb.AppendLine("    public static bool? IsOpcodeFamily(string name)");
+sb.AppendLine("        => OpcodeTable.ContainsKey(name) ? OpcodeTable[name].IsFamily : null;");
 sb.AppendLine("");
 sb.AppendLine("    public static bool IsValidOpcode(string name)");
 sb.AppendLine("        => OpcodeTable.ContainsKey(name);");
