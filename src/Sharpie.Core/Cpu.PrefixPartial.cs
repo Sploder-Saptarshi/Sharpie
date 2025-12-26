@@ -11,7 +11,7 @@ public partial class Cpu
         {
             case >= 0x10 and <= 0x1F: // LDM
             {
-                pcDelta = 4;
+                pcDelta = 3;
                 var x = IndexFromOpcode(prefixed);
                 var address = _memory.ReadWord(_pc + 1);
                 _registers[x] = _memory.ReadWord(address);
@@ -21,7 +21,7 @@ public partial class Cpu
             case >= 0x20
             and <= 0x2F: // LDI
             {
-                pcDelta = 3; // length is still 3 because we read 1 less byte
+                pcDelta = 3;
                 var x = IndexFromOpcode(prefixed);
                 var data = _memory.ReadByte(_pc + 1);
                 _registers[x] = (ushort)data;
@@ -31,7 +31,7 @@ public partial class Cpu
             case >= 0x30
             and <= 0x3F: // STM
             {
-                pcDelta = 4;
+                pcDelta = 3;
                 var x = IndexFromOpcode(prefixed);
                 var lowByte = (byte)((_registers[x] & 0x00FF));
                 var address = _memory.ReadWord(_pc + 1);
