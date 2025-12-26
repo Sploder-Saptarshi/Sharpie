@@ -1,3 +1,4 @@
 ﻿using Sharpie.Sdk.Asm;
 
-Assembler.ReadFile("src/Sharpie.Sdk/test.asm");
+var assembler = new Assembler();
+assembler.LoadFile("src/Sharpie.Sdk/test.asm");

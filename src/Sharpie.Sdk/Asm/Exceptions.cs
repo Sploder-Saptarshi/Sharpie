@@ -8,7 +8,7 @@ public class AssemblySyntaxException : System.Exception
         : base(message) { }
 
     public AssemblySyntaxException(string message, int lineNumber)
-        : this($"Syntax Error at line {lineNumber}:\n{message}") { }
+        : this($"Syntax Error at line {lineNumber}: {message}") { }
 
     public AssemblySyntaxException(string message, System.Exception inner)
         : base(message, inner) { }

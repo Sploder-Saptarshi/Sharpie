@@ -1,1 +1,2 @@
-SEX: this should be removed
+SKYRIM:
+LDI 10, 10, 10
