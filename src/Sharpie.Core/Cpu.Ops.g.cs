@@ -224,7 +224,7 @@ public partial class Cpu {
                 break;
 
             case >= 0x80 and <= 0x8F:
-                pcDelta = 3;
+                pcDelta = 4;
                 Execute_RND(opcode, ref pcDelta);
                 break;
 
