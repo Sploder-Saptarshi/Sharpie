@@ -471,6 +471,14 @@ public interface IMotherboard
             0x18,
             0x18,
             0x00, // Char Index 55 - :
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00, // Char Index 56 - SPACE
         };
 
     internal static byte[] GetCharacter(int index)
