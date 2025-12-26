@@ -1,6 +1,6 @@
 namespace Sharpie.Sdk.Asm;
 
-public class AssemblySyntaxException : System.Exception
+public class AssemblySyntaxException : Exception
 {
     public AssemblySyntaxException() { }
 
@@ -12,4 +12,17 @@ public class AssemblySyntaxException : System.Exception
 
     public AssemblySyntaxException(string message, System.Exception inner)
         : base(message, inner) { }
+}
+
+public class SharpieRomSizeException : Exception
+{
+    public SharpieRomSizeException() { }
+
+    private SharpieRomSizeException(string message)
+        : base(message) { }
+
+    public SharpieRomSizeException(int lastAddr)
+        : this(
+            $"Exceeded maximum Sharpie Rom size of 48 kilobytes by {lastAddr - 49152} bytes. Optimize your code."
+        ) { }
 }
