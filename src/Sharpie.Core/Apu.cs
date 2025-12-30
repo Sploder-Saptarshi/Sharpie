@@ -7,6 +7,7 @@ public class Apu
     private readonly float[] _volumes = new float[8];
     private readonly AdsrStage[] _stages = new AdsrStage[8];
     private readonly Random _noise = new();
+    private readonly float[] _noiseBuffer = new float[8];
 
     public Apu(Memory ram)
     {
@@ -34,16 +35,22 @@ public class Apu
         if (volume <= 0f && _stages[channel] == AdsrStage.Idle)
             return 0f;
 
+        if (channel >= 6)
+            freq *= 128;
+
         _phases[channel] += freq / 44100f;
         if (_phases[channel] >= 1f)
+        {
             _phases[channel] -= 1f;
+            _noiseBuffer[channel] = (_noise.NextSingle() * 2f - 1f) * 0.3f;
+        }
 
         var wave = channel switch
         {
             0 or 1 => Square(_phases[channel]),
             2 or 3 => Triangle(_phases[channel]),
             4 or 5 => Sawtooth(_phases[channel]),
-            _ => Noise(),
+            _ => _noiseBuffer[channel],
         };
 
         return wave * volume;
@@ -56,7 +63,7 @@ public class Apu
         var instrumentAddr = Memory.AudioRamStart + 32 + (instrumentId * 4);
         var chanBaseAddr = Memory.AudioRamStart + (channel * 4);
         var chanMaxVolume = _ram.ReadByte(chanBaseAddr + 2) / 255f;
-        const float divisor = 500000f;
+        const float divisor = 50000f;
 
         var aStep = (_ram.ReadByte(instrumentAddr) / divisor) + 0.000001f;
         var dStep = (_ram.ReadByte(instrumentAddr + 1) / divisor) + 0.000001f;
@@ -103,7 +110,7 @@ public class Apu
 
     private float Noise()
     {
-        return (_noise.NextSingle() * 2f - 1f) * 1.2f;
+        return (_noise.NextSingle() * 2f - 1f) * 0.25f;
     }
 
     private static float Sawtooth(float phase)
@@ -120,7 +127,7 @@ public class Apu
             value = 2f - (phase * 4f);
         else
             value = (phase * 4f) - 4f;
-        return value * 1.4f;
+        return value * 1.2f;
     }
 
     private static float Square(float phase)
