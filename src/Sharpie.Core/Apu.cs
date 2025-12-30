@@ -160,4 +160,29 @@ public class Apu
         Array.Clear(_phases);
         Array.Clear(_phases);
     }
+
+    internal void LoadDefaultInstruments()
+    {
+        var addr = Memory.InstrumentTableStart;
+
+        byte[][] defaults = new byte[][]
+        {
+            // 0: Fast Attack, Full Sustain, Short Release
+            new byte[] { 0x0F, 0x00, 0xFF, 0x05 },
+            // 1: Soft Attack, Med Decay, Med Sustain
+            new byte[] { 0x05, 0x10, 0xAA, 0x10 },
+            // 2: Slow Attack, Long Release
+            new byte[] { 0x02, 0x05, 0x88, 0x40 },
+            // 3: Instant Attack, Fast Decay, No Sustain
+            new byte[] { 0x0F, 0x20, 0x00, 0x00 },
+        };
+
+        foreach (var inst in defaults)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                _ram.WriteByte(addr++, inst[i]);
+            }
+        }
+    }
 }

@@ -32,6 +32,8 @@ public class Motherboard : IMotherboard
         _cpu = new Cpu(_memory, this);
         _ppu = new Ppu(_memory);
         _apu = new Apu(_memory);
+        _apu.LoadDefaultInstruments();
+
         _sequencer = new Sequencer(_memory);
         for (int i = 0; i < 32; i++)
         for (int j = 0; j < 32; j++)
