@@ -535,7 +535,7 @@ public partial class Cpu
 
     private partial void Execute_VBLNK(byte opcode, ref ushort pcDelta)
     {
-        _mobo.AwaitVBlank();
+        AwaitVBlank();
     }
 
     private partial void Execute_PLAY(byte opcode, ref ushort pcDelta)

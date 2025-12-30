@@ -34,6 +34,7 @@ public class Motherboard : IMotherboard
         for (int i = 0; i < 32; i++)
         for (int j = 0; j < 32; j++)
             TextGrid[i, j] = 0xFF;
+        _cpu.LoadDefaultPalette();
     }
 
     public void BootCartridge(Cartridge cart)
@@ -260,11 +261,16 @@ public class Motherboard : IMotherboard
         while (!Raylib.WindowShouldClose())
         {
             for (var i = 0; i < 16000; i++)
+            {
+                if (_cpu.IsAwaitingVBlank)
+                    break;
                 _cpu.Cycle();
+            }
 
             UpdateAudio();
             _sequencer.Step(this);
             UpdateDisplay();
+            _cpu.IsAwaitingVBlank = false;
         }
 
         Cleanup();

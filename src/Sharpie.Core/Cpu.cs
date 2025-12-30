@@ -133,8 +133,11 @@ public partial class Cpu
     }
 
     public bool IsHalted { get; private set; }
+    public bool IsAwaitingVBlank { get; set; }
 
     public void Halt() => IsHalted = true;
+
+    public void AwaitVBlank() => IsAwaitingVBlank = true;
 
     public void Reset()
     {
@@ -148,13 +151,21 @@ public partial class Cpu
         IsHalted = false;
     }
 
+    public void LoadDefaultPalette()
+    {
+        for (byte i = 0; i < 16; i++)
+        {
+            _memory.WriteByte(Memory.ColorPaletteStart + i, i);
+        }
+    }
+
     public void LoadPalette(byte[] colorPalette)
     {
-        for (int i = 0; i < 16; i++)
+        for (byte i = 0; i < 16; i++)
         {
             _memory.WriteByte(
                 Memory.ColorPaletteStart + i,
-                colorPalette[i] > 0x1F ? (byte)i : colorPalette[i]
+                colorPalette[i] > 0x1F ? i : colorPalette[i]
             );
         }
     }
