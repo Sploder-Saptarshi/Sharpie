@@ -11,8 +11,8 @@ internal class Cartridge
     public static readonly byte[] InitialPalette = new byte[] // Change any of these to any number from 0-31 to override a color.
     { // Note that color 0 is always transparent.
         0xFF,
-        0x0A,
-        0x14,
+        0xFF,
+        0xFF,
         0xFF,
         0xFF,
         0xFF,

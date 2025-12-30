@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
@@ -33,10 +31,12 @@ public partial class Assembler
                         var spriteIndex = ParseByte(token.Args[0], lineNum);
                         var target = CalculateSpriteAddress(spriteIndex);
 
-                        if (target < CurrentAddress)
+                        if (target >= Rom.Length)
+                        {
                             throw new SharpieRomSizeException(
-                                $"Sprite #{spriteIndex} overlaps existing code"
+                                $"Sprite #{spriteIndex} is out of bounds (Addr: {target})"
                             );
+                        }
 
                         CurrentAddress = target;
                         break;
@@ -48,6 +48,15 @@ public partial class Assembler
                         {
                             WriteToRom(ParseByte(arg, lineNum));
                             CurrentAddress++;
+                        }
+                        break;
+
+                    case ".DW":
+                    case ".WORDS":
+                        foreach (var arg in token.Args)
+                        {
+                            WriteToRom(ParseWord(arg, lineNum));
+                            CurrentAddress += 2;
                         }
                         break;
                 }
@@ -112,71 +121,6 @@ public partial class Assembler
         }
     }
 
-    private ushort ParseWord(string arg, int lineNum)
-    {
-        if (Constants.TryGetValue(arg, out var val))
-            return (ushort)val;
-
-        if (LabelToMemAddr.TryGetValue(arg, out var addr))
-            return addr;
-
-        var num = ParseNumberLiteral(arg, true);
-        if (num.HasValue && num.Value >= 0 && num.Value <= ushort.MaxValue)
-            return (ushort)num;
-
-        throw new AssemblySyntaxException(
-            $"Invalid unsigned 16-bit value or unresolved symbol: '{arg}'",
-            lineNum
-        );
-    }
-
-    private byte ParseByte(string arg, int lineNum)
-    {
-        if (Constants.TryGetValue(arg, out var val))
-            return (byte)val;
-
-        var num = ParseNumberLiteral(arg, false);
-        if (num.HasValue && num.Value >= 0 && num.Value <= byte.MaxValue)
-            return (byte)num;
-
-        throw new AssemblySyntaxException(
-            $"Invalid unsigned 8-bit value: '{arg}' (Note: the '$' prefix is only for addresses)",
-            lineNum
-        );
-    }
-
-    private byte ParseRegister(string arg, int lineNumber)
-    {
-        var cleanArg = arg;
-        if (arg.StartsWith('r') || arg.StartsWith('R'))
-            cleanArg = arg.Substring(1);
-
-        if (Constants.TryGetValue(arg, out var constant))
-        {
-            if (constant < 0 || constant >= 16)
-                throw new AssemblySyntaxException(
-                    $"Register index {constant} is not valid - must be 0-15",
-                    lineNumber
-                );
-
-            return (byte)constant;
-        }
-
-        if (!byte.TryParse(cleanArg, out byte parsed))
-            throw new AssemblySyntaxException(
-                $"Register index {arg} is not a valid number.",
-                lineNumber
-            );
-
-        if (parsed < 0 || parsed >= 16)
-            throw new AssemblySyntaxException(
-                $"Register index {parsed} is not valid - must be 0-15",
-                lineNumber
-            );
-
-        return parsed;
-    }
-
     private void WriteToRom(byte value, int offset = 0)
     {
         var realAddr = CurrentAddress + offset;
@@ -196,45 +140,5 @@ public partial class Assembler
 
         WriteToRom(low);
         WriteToRom(high, 1);
-    }
-
-    private int? ParseNumberLiteral(string input, bool allowAddrPref)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return null;
-
-        var isAddr = input.StartsWith('$');
-        if (isAddr && !allowAddrPref)
-            return null;
-
-        var cleanArg = isAddr ? input.Substring(1) : input;
-        var style = 10;
-
-        if (cleanArg.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-        {
-            cleanArg = cleanArg.Substring(2);
-            style = 16;
-        }
-        else if (isAddr || Regex.Match(cleanArg, "[A-F]|[a-f]").Success)
-        {
-            style = 16;
-        }
-
-        try
-        {
-            return Convert.ToInt32(cleanArg, style);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private int CalculateSpriteAddress(byte spriteIndex)
-    {
-        const int spriteSize = 32;
-        const int romEnd = 0xE000;
-
-        return (ushort)(romEnd - (spriteSize * (spriteIndex + 1)));
     }
 }
