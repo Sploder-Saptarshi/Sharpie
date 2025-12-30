@@ -27,7 +27,7 @@ public partial class Cpu
     private ushort _sp;
     private ushort[] _registers = new ushort[16];
     private readonly Random _rng = new();
-    private ushort _oamReg = Memory.OamStart;
+    private ushort _oamReg = 0;
     private ushort OamRegister
     {
         get => _oamReg;

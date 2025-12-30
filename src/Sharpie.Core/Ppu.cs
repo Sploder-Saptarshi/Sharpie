@@ -80,7 +80,9 @@ public partial class Ppu
 
     public void VBlank(IMotherboard mobo)
     {
-        for (int oamIndex = OamStart; oamIndex < OamStart + 512; oamIndex += 4)
+        FillBuffer(BackgroundColorIndex);
+
+        for (int oamIndex = OamStart; oamIndex < OamStart + 2048; oamIndex += 4)
         {
             var x = _systemRam.ReadByte(oamIndex);
             var y = _systemRam.ReadByte(oamIndex + 1);
