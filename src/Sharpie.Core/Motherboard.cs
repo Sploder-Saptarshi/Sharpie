@@ -11,16 +11,12 @@ public class Motherboard : IMotherboard
     private readonly Sequencer _sequencer;
 
     private Texture2D _screenTexture;
-    private RenderTexture2D _target;
     private AudioStream _stream;
     private float[] _writeBuffer = new float[441];
     private int _actualWindowSize;
 
     public byte FontColorIndex { get; private set; } = 1;
     private byte _fontSizeReg = 0;
-
-    private const int MusicPointerAddress = 0x0004;
-    private int _musicStart = 0;
 
     public byte[] ControllerStates { get; } = new byte[2];
     public byte[,] TextGrid { get; } = new byte[32, 32];
@@ -75,37 +71,29 @@ public class Motherboard : IMotherboard
         Raylib.SetTargetFPS(60);
 
         // 3. Setup Textures
-        _target = Raylib.LoadRenderTexture(internalRes, internalRes);
         var blank = Raylib.GenImageColor(internalRes, internalRes, Color.Blank);
         _screenTexture = Raylib.LoadTextureFromImage(blank);
         Raylib.UnloadImage(blank);
-
         Raylib.SetTextureFilter(_screenTexture, TextureFilter.Point);
-        Raylib.SetTextureFilter(_target.Texture, TextureFilter.Point);
     }
 
     private void UpdateDisplay()
     {
-        Raylib.BeginDrawing();
-        Raylib.ClearBackground(Color.Black); // This draws the black bars
         RenderBufferAsTexture();
+
+        Raylib.BeginDrawing();
+        Raylib.ClearBackground(Color.Black);
 
         int screenW = Raylib.GetScreenWidth();
         int screenH = Raylib.GetScreenHeight();
-
-        // 1. Find the smallest dimension to keep it square
         float minDim = Math.Min(screenW, screenH);
-
-        // 2. Center the square in the window
         float xOffset = (screenW - minDim) / 2;
         float yOffset = (screenH - minDim) / 2;
-
-        var sourceRec = new Rectangle(0, 0, 256, -256);
-        // 3. The destination is now a centered square
+        var sourceRec = new Rectangle(0, 0, 256, 256);
         var destRec = new Rectangle(xOffset, yOffset, minDim, minDim);
 
         Raylib.DrawTexturePro(
-            _target.Texture,
+            _screenTexture,
             sourceRec,
             destRec,
             System.Numerics.Vector2.Zero,
@@ -262,9 +250,6 @@ public class Motherboard : IMotherboard
         {
             Raylib.UpdateTexture(_screenTexture, pPixels);
         }
-        Raylib.BeginTextureMode(_target);
-        Raylib.DrawTexture(_screenTexture, 0, 0, Color.White);
-        Raylib.EndTextureMode();
     }
 
     public void Run()
@@ -288,7 +273,6 @@ public class Motherboard : IMotherboard
     private void Cleanup()
     {
         Raylib.UnloadTexture(_screenTexture);
-        Raylib.UnloadRenderTexture(_target);
         Raylib.CloseAudioDevice();
         Raylib.CloseWindow();
     }
