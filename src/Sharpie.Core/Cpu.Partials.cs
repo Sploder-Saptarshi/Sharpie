@@ -513,8 +513,9 @@ public partial class Cpu
         var (attrReg, oamSlotReg) = ReadRegisterArgs(2);
         var spriteId = (byte)_registers[sprIdReg];
         var attributes = (byte)_registers[attrReg];
-        _registers[oamSlotReg] = (ushort)(OamRegister / 4);
-        _tagMap[OamRegister / 4] = attributes;
+        var slotIndex = OamRegister / 4;
+        _registers[oamSlotReg] = (ushort)slotIndex;
+        _tagMap[slotIndex] = attributes;
         var addr = Memory.OamStart + OamRegister;
         OamRegister += 4;
         _memory.WriteByte(addr, (byte)_registers[x]);
@@ -561,7 +562,7 @@ public partial class Cpu
     private partial void Execute_INPUT(byte opcode, ref ushort pcDelta)
     {
         var (rController, rDest) = ReadRegisterArgs();
-        _registers[rDest] = _mobo.ControllerStates[rController & 1];
+        _registers[rDest] = _mobo.ControllerStates[_registers[rController] & 1];
     }
 
     private partial void Execute_RND(byte opcode, ref ushort pcDelta)
@@ -591,8 +592,7 @@ public partial class Cpu
 
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta)
     {
-        var oldIndex = _memory.ReadByte(_pc + 1) & 0x0F;
-        var newIndex = _memory.ReadByte(_pc + 2) & 0x0F;
+        var (oldIndex, newIndex) = ReadRegisterArgs();
         _mobo.SwapColor((byte)(_registers[oldIndex] & 0x0F), (byte)(_registers[newIndex] & 0x1F));
     }
 
