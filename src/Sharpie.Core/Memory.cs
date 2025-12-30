@@ -69,5 +69,8 @@ public class Memory
 
     public void ClearRange(int from, int amount) => Array.Clear(_contents, from, amount);
 
+    public void FillRange(int startIndex, int amount, byte value) =>
+        Array.Fill(_contents, value, startIndex, amount);
+
     public Span<byte> Slice(int from, int amount) => _contents.AsSpan(from, amount);
 }
