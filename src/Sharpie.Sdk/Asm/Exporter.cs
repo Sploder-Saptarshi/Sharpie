@@ -25,21 +25,23 @@ public class Exporter
         }
     }
 
-    public void ExportRom(byte[] romData)
+    public void ExportRom(byte[] romData, bool asFirmware = false)
     {
         Console.WriteLine($"Exporter: Saving to {_fileName}...");
-        var checksum = CalculateChecksum(romData);
         using var fs = new FileStream(_fileName, FileMode.Create);
         using var writer = new BinaryWriter(fs);
 
-        writer.Write(Encoding.ASCII.GetBytes("SHRP"));
-        writer.Write(GetPaddedBytes(_title, 24));
-        writer.Write(GetPaddedBytes(_author, 14));
+        if (!asFirmware)
+        {
+            writer.Write(Encoding.ASCII.GetBytes("SHRP"));
+            writer.Write(GetPaddedBytes(_title, 24));
+            writer.Write(GetPaddedBytes(_author, 14));
 
-        writer.Write(_biosVersion);
-        writer.Write(checksum);
+            writer.Write(_biosVersion);
+            writer.Write(CalculateChecksum(romData));
 
-        writer.Write(_palette);
+            writer.Write(_palette);
+        }
         writer.Write(romData);
     }
 

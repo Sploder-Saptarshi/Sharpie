@@ -1,5 +1,3 @@
-using Sharpie.Core.Hardware;
-
 namespace Sharpie.Core.Hardware;
 
 public partial class Ppu
@@ -11,15 +9,15 @@ public partial class Ppu
     private int _currentBuffer = 0;
     private ushort DisplayStart => (ushort)(_currentBuffer == 0 ? 0x0000 : 0x8000);
     private ushort RenderStart => (ushort)(_currentBuffer == 0 ? 0x8000 : 0x0000);
-    private readonly Memory _systemRam;
+    private readonly IMotherboard _mobo;
     private readonly Memory _vRam;
     private readonly byte[] _spriteBuffer = new byte[64]; // here so the GC doesn't cry
 
     public byte BackgroundColorIndex { get; set; } = 0;
 
-    public Ppu(Memory systemRam)
+    public Ppu(IMotherboard mobo)
     {
-        _systemRam = systemRam;
+        _mobo = mobo;
         _vRam = new Memory();
     }
 
@@ -34,7 +32,7 @@ public partial class Ppu
             var realRow = flipV ? (7 - row) : row;
             for (int column = 0; column < 4; column++) // 4 bytes per row because of indexed color
             {
-                var packed = _systemRam.ReadByte(spriteStartAddr + (row * 4) + column);
+                var packed = _mobo.ReadByte(spriteStartAddr + (row * 4) + column);
                 var pixel1 = (byte)((packed >> 4) & 0x0F);
                 var pixel2 = (byte)(packed & 0x0F);
 
@@ -88,18 +86,20 @@ public partial class Ppu
 
         for (int oamIndex = OamStart; oamIndex < OamStart + 2048; oamIndex += 4)
         {
-            var x = _systemRam.ReadByte(oamIndex);
-            var y = _systemRam.ReadByte(oamIndex + 1);
-            var spriteId = _systemRam.ReadByte(oamIndex + 2);
-            var attributes = _systemRam.ReadByte(oamIndex + 3);
+            var x = _mobo.ReadByte(oamIndex);
+            var y = _mobo.ReadByte(oamIndex + 1);
+            var spriteId = _mobo.ReadByte(oamIndex + 2);
+            var attributes = _mobo.ReadByte(oamIndex + 3);
 
-            if (x == 0xFF && y == 0xFF & spriteId == 0xFF & attributes == 0xFF)
+            if (x == 0xFF && y == 0xFF && spriteId == 0xFF && attributes == 0xFF)
                 continue;
 
             GetSprite(spriteId, attributes);
             for (int row = 0; row < 8; row++)
             for (int column = 0; column < 8; column++)
+            {
                 WritePixel(x + column, y + row, _spriteBuffer[row * 8 + column]);
+            }
         }
 
         var textColor = mobo.FontColorIndex;

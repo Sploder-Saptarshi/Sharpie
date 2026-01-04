@@ -4,15 +4,19 @@ namespace Sharpie.Core.Drivers;
 
 public class Sequencer
 {
-    private readonly Memory _memory;
+    private readonly IMotherboard _mobo;
     private int _cursor = 0;
     private int _delayFrames = 0;
     public bool Enabled { get; set; } = false;
 
-    public Sequencer(Memory memory)
+    public Sequencer(IMotherboard mobo)
     {
-        _memory = memory;
+        _mobo = mobo;
+        if (Instance == null)
+            Instance = this;
     }
+
+    public static Sequencer? Instance { get; private set; }
 
     public void LoadSong(int startAddr)
     {
@@ -21,7 +25,7 @@ public class Sequencer
         Enabled = true;
     }
 
-    public void Step(IMotherboard mobo)
+    public void Step()
     {
         if (!Enabled)
             return;
@@ -33,15 +37,15 @@ public class Sequencer
 
         while (Enabled && _delayFrames == 0)
         {
-            var channel = _memory.ReadByte(_cursor);
-            var note = _memory.ReadByte(_cursor + 1);
-            var duration = _memory.ReadByte(_cursor + 2);
-            var instrument = _memory.ReadByte(_cursor + 3);
+            var channel = _mobo.ReadByte(_cursor);
+            var note = _mobo.ReadByte(_cursor + 1);
+            var duration = _mobo.ReadByte(_cursor + 2);
+            var instrument = _mobo.ReadByte(_cursor + 3);
 
             if (channel == 0xFF) // END
             {
                 Enabled = false;
-                mobo.StopAllSounds();
+                _mobo.StopAllSounds();
                 break;
             }
             else if (channel == 0xFE) // GOTO
@@ -52,11 +56,11 @@ public class Sequencer
             }
             else if (note == 0)
             {
-                mobo.StopChannel(channel);
+                _mobo.StopChannel(channel);
             }
             else
             {
-                mobo.PlayNote(channel, note, instrument);
+                _mobo.PlayNote(channel, note, instrument);
             }
 
             _delayFrames = duration;

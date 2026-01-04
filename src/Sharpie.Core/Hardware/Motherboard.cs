@@ -7,10 +7,12 @@ public class Motherboard : IMotherboard
     private readonly Cpu _cpu;
     private readonly Ppu _ppu;
     private readonly Apu _apu;
-    private readonly Memory _memory;
+    private readonly Memory _ram;
+    private readonly Memory _biosRom;
     private readonly Sequencer _sequencer;
 
-    private float[] _audioBuffer = new float[4096];
+    private bool _isInBootMode;
+    private const ushort ReservedSpaceStart = Memory.ReservedSpaceStart;
 
     public byte FontColorIndex { get; private set; } = 1;
     private byte _fontSizeReg = 0;
@@ -26,19 +28,21 @@ public class Motherboard : IMotherboard
     {
         MagicString = 0xFA20,
         Version = 0xFA24,
-        CartridgeBootState = 0xFA27,
+        CartridgeBootState = 0xFA26,
     }
 
     public Motherboard(IDisplayOutput display, IAudioOutput audio, IInputHandler input)
     {
-        _memory = new Memory();
-        _memory.FillRange(Memory.OamStart, 2048, 0xFF);
-        _cpu = new Cpu(_memory, this);
-        _ppu = new Ppu(_memory);
-        _apu = new Apu(_memory);
+        _ram = new Memory();
+        _biosRom = new Memory();
+        _ram.FillRange(Memory.OamStart, 2048, 0xFF);
+        _biosRom.FillRange(Memory.OamStart, 2048, 0xFF);
+        _cpu = new Cpu(this);
+        _ppu = new Ppu(this);
+        _apu = new Apu(this);
         _apu.LoadDefaultInstruments();
 
-        _sequencer = new Sequencer(_memory);
+        _sequencer = new Sequencer(this);
         for (int i = 0; i < 32; i++)
         for (int j = 0; j < 32; j++)
             TextGrid[i, j] = 0xFF;
@@ -47,17 +51,88 @@ public class Motherboard : IMotherboard
         _displayDevice = display;
         _audioDevice = audio;
         _inputDevice = input;
+        SetupDisplay();
+        SetupAudio();
         _cpu.Reset();
+        _isInBootMode = true;
     }
 
     public void BootCartridge(Cartridge cart)
     {
         var bytesToLoad = Math.Min(cart.RomData.Length, Memory.OamStart); // capped to avoid any tomfoolery from manually edited files
-        _memory.LoadData(Memory.RomStart, cart.RomData.Take(bytesToLoad).ToArray());
+        _ram.LoadData(Memory.RomStart, cart.RomData.Take(bytesToLoad).ToArray());
 
         _cpu.LoadPalette(cart.Palette);
         _cpu.Reset();
         Step();
+    }
+
+    public byte ReadByte(ushort address)
+    {
+        if (_isInBootMode && address <= Memory.SpriteAtlasStart)
+            return _biosRom.ReadByte(address);
+
+        return _ram.ReadByte(address);
+    }
+
+    public byte ReadByte(int address) => ReadByte((ushort)address);
+
+    public ushort ReadWord(ushort address)
+    {
+        if (_isInBootMode && address < Memory.SpriteAtlasStart)
+            return _biosRom.ReadWord(address);
+
+        return _ram.ReadWord(address);
+    }
+
+    public ushort ReadWord(int address) => ReadWord((ushort)address);
+
+    public void WriteByte(ushort address, byte value)
+    {
+        _ram.WriteByte(address, value);
+
+        if (address != (ushort)BiosFlagAddresses.CartridgeBootState)
+            return;
+
+        // TODO: Implement actual BIOS boot interop
+        if (value == 0x01) // cart is ok, shove it to RAM
+        {
+            _isInBootMode = false;
+            return;
+        }
+        if (value == 0xFF) // cart is invalid, discard data
+            return;
+    }
+
+    public void WriteByte(int address, byte value) => WriteByte((ushort)address, value);
+
+    public void WriteWord(ushort address, ushort value)
+    {
+        _ram.WriteWord(address, value);
+
+        if (address != (ushort)BiosFlagAddresses.CartridgeBootState)
+            return;
+
+        // TODO: Implement actual BIOS boot interop
+        if (value == 0x01) // cart is ok, shove it to RAM
+        {
+            _isInBootMode = false;
+            return;
+        }
+        if (value == 0xFF) // cart is invalid, discard data
+            return;
+    }
+
+    public void WriteWord(int address, ushort value) => WriteWord((ushort)address, value);
+
+    public void FillRange(int startIndex, int amount, byte value)
+    {
+        _ram.FillRange(startIndex, amount, value);
+    }
+
+    public void LoadBios(byte[] biosData)
+    {
+        _biosRom.LoadData(0, biosData);
     }
 
     public void BootCartridge(byte[] fileData)
@@ -69,7 +144,7 @@ public class Motherboard : IMotherboard
             throw new FormatException("Not a valid Sharpie ROM: Invalid Header.");
 
         var romData = fileData.Skip(64).ToArray();
-        _memory.LoadData(0, romData);
+        _ram.LoadData(0, romData);
         // TODO: write first four bytes to MagicString, version to Version, and poll whether to load cartridge from CartridgeBootState
     }
 
@@ -88,18 +163,10 @@ public class Motherboard : IMotherboard
         return _ppu.GetFrame();
     }
 
-    public float[] GetAudioBuffer()
-    {
-        return _audioBuffer;
-    }
-
-    public unsafe void UpdateAudio() => _apu.FillBuffer(_audioBuffer);
-
     public void VBlank()
     {
         GetInputState();
         _ppu.VBlank(this);
-        _ppu.FlipBuffers();
     }
 
     public void ClearScreen(byte colorIndex)
@@ -133,9 +200,9 @@ public class Motherboard : IMotherboard
         var freq = channel < 6 ? (440f * MathF.Pow(2f, (note - 69f) / 12f)) : note;
         var baseAddr = Memory.AudioRamStart + (channel * 4);
 
-        _memory.WriteWord(baseAddr, (ushort)freq);
-        _memory.WriteByte(baseAddr + 2, 0xFF);
-        _memory.WriteByte(baseAddr + 3, (byte)((instrument << 1) | 1));
+        _ram.WriteWord(baseAddr, (ushort)freq);
+        _ram.WriteByte(baseAddr + 2, 0xFF);
+        _ram.WriteByte(baseAddr + 3, (byte)((instrument << 1) | 1));
     }
 
     public void SetTextAttributes(byte attributes)
@@ -147,8 +214,8 @@ public class Motherboard : IMotherboard
     public void StopChannel(byte channel)
     {
         var contolAddr = Memory.AudioRamStart + (channel * 4) + 3;
-        var control = _memory.ReadByte(contolAddr);
-        _memory.WriteByte(contolAddr, (byte)(control & (~0x01)));
+        var control = _ram.ReadByte(contolAddr);
+        _ram.WriteByte(contolAddr, (byte)(control & (~0x01)));
     }
 
     public void StopSystem()
@@ -158,7 +225,7 @@ public class Motherboard : IMotherboard
 
     public void SwapColor(byte oldIndex, byte newIndex)
     {
-        _memory.WriteByte(Memory.ColorPaletteStart + oldIndex, newIndex);
+        _ram.WriteByte(Memory.ColorPaletteStart + oldIndex, newIndex);
     }
 
     public void StopAllSounds()
@@ -174,17 +241,17 @@ public class Motherboard : IMotherboard
 
     public ushort CheckCollision(int sprIdSrc)
     {
-        var xSrc = _memory.ReadByte(Memory.OamStart + sprIdSrc);
-        var ySrc = _memory.ReadByte(Memory.OamStart + sprIdSrc + 1);
+        var xSrc = _ram.ReadByte(Memory.OamStart + sprIdSrc);
+        var ySrc = _ram.ReadByte(Memory.OamStart + sprIdSrc + 1);
         for (int i = 0; i < 2048; i += 4)
         {
-            var sprId = _memory.ReadByte(Memory.OamStart + i + 2);
+            var sprId = _ram.ReadByte(Memory.OamStart + i + 2);
             if (sprId == sprIdSrc)
                 continue; // don't check against self
 
-            var x = _memory.ReadByte(Memory.OamStart + i);
-            var y = _memory.ReadByte(Memory.OamStart + i + 1);
-            var attr = _memory.ReadByte(Memory.OamStart + i + 3);
+            var x = _ram.ReadByte(Memory.OamStart + i);
+            var y = _ram.ReadByte(Memory.OamStart + i + 1);
+            var attr = _ram.ReadByte(Memory.OamStart + i + 3);
 
             if (x == 0xFF && y == 0xFF && sprId == 0xFF && attr == 0xFF)
                 continue; // don't check blank oam slot
@@ -200,8 +267,6 @@ public class Motherboard : IMotherboard
 
     public void Step()
     {
-        SetupDisplay();
-        SetupAudio();
         for (var i = 0; i < 16000; i++)
         {
             if (_cpu.IsAwaitingVBlank)
@@ -210,8 +275,7 @@ public class Motherboard : IMotherboard
         }
 
         VBlank();
-        UpdateAudio();
-        _sequencer.Step(this);
+        _ppu.FlipBuffers();
         _cpu.IsAwaitingVBlank = false;
     }
 }

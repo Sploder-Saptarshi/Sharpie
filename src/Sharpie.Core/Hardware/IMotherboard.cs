@@ -28,6 +28,20 @@ public interface IMotherboard
     void StopSystem();
     ushort CheckCollision(int sprIdSrc);
 
+    byte ReadByte(ushort address);
+    byte ReadByte(int address);
+
+    void WriteByte(ushort address, byte value);
+    void WriteByte(int address, byte value);
+
+    ushort ReadWord(ushort address);
+    ushort ReadWord(int address);
+
+    void WriteWord(ushort address, ushort value);
+    void WriteWord(int address, ushort value);
+
+    void FillRange(int startIndex, int amount, byte value);
+
     public static ReadOnlySpan<byte> SmallFont =>
         new byte[]
         {

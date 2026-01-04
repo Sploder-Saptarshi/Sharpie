@@ -1,0 +1,46 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Raylib_cs;
+using Sharpie.Core.Drivers;
+
+namespace Sharpie.Runner.RaylibCs.Impl;
+
+public class RaylibAudioOutput : IAudioOutput
+{
+    private AudioStream _stream;
+    private static int SequencerCounter = 0;
+
+    public unsafe void Initialize(int sampleRate)
+    {
+        Raylib.InitAudioDevice();
+        Raylib.SetAudioStreamBufferSizeDefault(4096);
+        _stream = Raylib.LoadAudioStream((uint)sampleRate, 32, 1);
+        Raylib.SetAudioStreamCallback(_stream, &AudioCallback);
+        Raylib.PlayAudioStream(_stream);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static unsafe void AudioCallback(void* buffer, uint frames)
+    {
+        if (Sharpie.Core.Hardware.Apu.Instance == null) // just in case it's still uninitialized
+            return;
+
+        float* floatBuffer = (float*)buffer;
+        Sharpie.Core.Hardware.Apu.Instance.FillBufferRange(floatBuffer, frames);
+
+        SequencerCounter += (int)frames;
+        while (SequencerCounter >= 735)
+        {
+            SequencerCounter -= 735;
+            Sequencer.Instance?.Step();
+        }
+    }
+
+    public void HandleAudioBuffer(float[] audioBuffer) { }
+
+    public void Cleanup()
+    {
+        Raylib.UnloadAudioStream(_stream);
+        Raylib.CloseAudioDevice();
+    }
+}

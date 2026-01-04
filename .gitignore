@@ -5,4 +5,7 @@
 .editorconfig
 *.asm
 *.shr
+*.sh
+/artifacts
 *.png
+*.bin

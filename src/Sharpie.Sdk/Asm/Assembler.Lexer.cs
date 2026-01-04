@@ -156,6 +156,7 @@ public partial class Assembler
                 Opcode = "TEXT",
                 Args = new[] { TextHelper.GetFontIndex(c).ToString() },
                 SourceLine = lineNumber,
+                Address = CurrentAddress,
             };
             Tokens.Add(tl);
             CurrentAddress += delta;

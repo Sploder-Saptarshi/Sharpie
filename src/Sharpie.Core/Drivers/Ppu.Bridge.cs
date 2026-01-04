@@ -13,7 +13,7 @@ public partial class Ppu
             var isHighNibble = (i & 1) == 0; // high nibble is always even pixel number
             var packed = _vRam.ReadByte(displayBase + vramByteOffset);
             var colorIndex = isHighNibble ? (byte)(packed >> 4) : (byte)(packed & 0xF);
-            var realIndex = _systemRam.ReadByte(Memory.ColorPaletteStart + colorIndex);
+            var realIndex = _mobo.ReadByte(Memory.ColorPaletteStart + colorIndex);
             var color = IMotherboard.MasterPalette[realIndex];
 
             var bufferIndex = i * 4;

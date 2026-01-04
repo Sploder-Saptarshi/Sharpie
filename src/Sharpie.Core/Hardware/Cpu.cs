@@ -13,12 +13,10 @@ internal enum CpuFlags : ushort
 public partial class Cpu
 {
     private const int MaxOamSlots = 512;
-    private readonly Memory _memory;
     private readonly IMotherboard _mobo;
 
-    public Cpu(Memory memory, IMotherboard motherboard)
+    public Cpu(IMotherboard motherboard)
     {
-        _memory = memory;
         _mobo = motherboard;
         Reset();
     }
@@ -89,8 +87,16 @@ public partial class Cpu
         FlagRegister &= 0xFFF0;
         ushort flags = 0;
 
-        if (result > ushort.MaxValue || result < 0)
-            flags |= (ushort)CpuFlags.Carry; // carry
+        if (!subtraction)
+        {
+            if (result > ushort.MaxValue)
+                flags |= (ushort)CpuFlags.Carry;
+        }
+        else
+        {
+            if (op1 < op2)
+                flags |= (ushort)CpuFlags.Carry;
+        }
 
         if ((ushort)result == 0)
             flags |= (ushort)CpuFlags.Zero; // zero
@@ -144,6 +150,7 @@ public partial class Cpu
         Array.Clear(_registers, 0, _registers.Length);
 
         _pc = Memory.RomStart;
+        OamRegister = 0;
         IsHalted = false;
     }
 
@@ -151,7 +158,7 @@ public partial class Cpu
     {
         for (byte i = 0; i < 16; i++)
         {
-            _memory.WriteByte(Memory.ColorPaletteStart + i, i);
+            _mobo.WriteByte(Memory.ColorPaletteStart + i, i);
         }
     }
 
@@ -159,7 +166,7 @@ public partial class Cpu
     {
         for (byte i = 0; i < 16; i++)
         {
-            _memory.WriteByte(
+            _mobo.WriteByte(
                 Memory.ColorPaletteStart + i,
                 colorPalette[i] > 0x1F ? i : colorPalette[i]
             );
@@ -171,10 +178,9 @@ public partial class Cpu
         if (IsHalted)
             return;
 
-        byte opcode = _memory.ReadByte(_pc);
+        byte opcode = _mobo.ReadByte(_pc);
 
         ExecuteOpcode(opcode, out ushort pcDelta);
-
         Advance(pcDelta);
     }
 
@@ -215,7 +221,7 @@ Registers:
     /// </summary>
     private (int highNibble, int lowNibble) ReadRegisterArgs(int offset = 1)
     {
-        var args = _memory.ReadByte((_pc + offset));
+        var args = _mobo.ReadByte((_pc + offset));
         var rX = (args >> 4) & 0x0F;
         var rY = args & 0x0F;
 

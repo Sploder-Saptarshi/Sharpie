@@ -12,22 +12,22 @@ public partial class Cpu
     private partial void Execute_LDM(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
-        var address = _memory.ReadWord((_pc + 1));
-        _registers[x] = _memory.ReadWord(address);
+        var address = _mobo.ReadWord((_pc + 1));
+        _registers[x] = _mobo.ReadWord(address);
     }
 
     private partial void Execute_LDI(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
-        var value = _memory.ReadWord(_pc + 1);
+        var value = _mobo.ReadWord(_pc + 1);
         _registers[x] = value;
     }
 
     private partial void Execute_STM(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
-        var address = _memory.ReadWord(_pc + 1);
-        _memory.WriteWord(address, _registers[x]);
+        var address = _mobo.ReadWord(_pc + 1);
+        _mobo.WriteWord(address, _registers[x]);
     }
 
     private partial void Execute_ADD(byte opcode, ref ushort pcDelta)
@@ -203,7 +203,7 @@ public partial class Cpu
 
     private partial void Execute_INC(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
+        var x = _mobo.ReadByte(_pc + 1);
         var result = (ushort)(_registers[x] + 1);
         UpdateFlags(result, _registers[x], 1);
         _registers[x] = result;
@@ -211,7 +211,7 @@ public partial class Cpu
 
     private partial void Execute_DEC(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
+        var x = _mobo.ReadByte(_pc + 1);
         var result = _registers[x] - 1;
         UpdateFlags(result, _registers[x], 1, true);
         _registers[x] = (ushort)result;
@@ -219,7 +219,7 @@ public partial class Cpu
 
     private partial void Execute_NOT(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
+        var x = _mobo.ReadByte(_pc + 1);
         var result = (ushort)~_registers[x];
         UpdateLogicFlags(result);
         SetFlag(false, CpuFlags.Carry);
@@ -241,8 +241,8 @@ public partial class Cpu
 
     private partial void Execute_IADD(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = _registers[x] + imm;
         UpdateFlags(result, _registers[x], imm);
@@ -251,8 +251,8 @@ public partial class Cpu
 
     private partial void Execute_ISUB(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = _registers[x] - imm;
         UpdateFlags(result, _registers[x], imm, true);
@@ -261,8 +261,8 @@ public partial class Cpu
 
     private partial void Execute_IMUL(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = (ushort)(_registers[x] * imm);
         UpdateLogicFlags(result);
@@ -271,8 +271,8 @@ public partial class Cpu
 
     private partial void Execute_IDIV(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         if (imm == 0)
         {
@@ -290,8 +290,8 @@ public partial class Cpu
 
     private partial void Execute_IMOD(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         if (imm == 0)
         {
@@ -309,8 +309,8 @@ public partial class Cpu
 
     private partial void Execute_IAND(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = (ushort)(_registers[x] & imm);
         UpdateLogicFlags(result);
@@ -321,8 +321,8 @@ public partial class Cpu
 
     private partial void Execute_IOR(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = (ushort)(_registers[x] | imm);
         UpdateLogicFlags(result);
@@ -333,8 +333,8 @@ public partial class Cpu
 
     private partial void Execute_IXOR(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = (ushort)(_registers[x] ^ imm);
         UpdateLogicFlags(result);
@@ -345,8 +345,8 @@ public partial class Cpu
 
     private partial void Execute_ICMP(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var imm = _memory.ReadByte(_pc + 2);
+        var x = _mobo.ReadByte(_pc + 1);
+        var imm = _mobo.ReadByte(_pc + 2);
 
         var result = _registers[x] - imm;
         UpdateFlags(result, _registers[x], imm, true);
@@ -354,34 +354,34 @@ public partial class Cpu
 
     private partial void Execute_DINC(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var word = _memory.ReadWord(_registers[x]);
+        var x = _mobo.ReadByte(_pc + 1);
+        var word = _mobo.ReadWord(_registers[x]);
 
         var result = word + 1;
         UpdateFlags(result, _registers[x], 1);
-        _memory.WriteWord(_registers[x], (ushort)result);
+        _mobo.WriteWord(_registers[x], (ushort)result);
     }
 
     private partial void Execute_DDEC(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
-        var word = _memory.ReadWord(_registers[x]);
+        var x = _mobo.ReadByte(_pc + 1);
+        var word = _mobo.ReadWord(_registers[x]);
 
         var result = word - 1;
         UpdateFlags(result, _registers[x], 1, true);
-        _memory.WriteWord(_registers[x], (ushort)result);
+        _mobo.WriteWord(_registers[x], (ushort)result);
     }
 
     private partial void Execute_JMP(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         _pc = target;
         pcDelta = 0;
     }
 
     private partial void Execute_JEQ(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         if (IsFlagOn(CpuFlags.Zero))
         {
             _pc = target;
@@ -391,7 +391,7 @@ public partial class Cpu
 
     private partial void Execute_JNE(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         if (!IsFlagOn(CpuFlags.Zero))
         {
             _pc = target;
@@ -401,7 +401,7 @@ public partial class Cpu
 
     private partial void Execute_JGT(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         var zero = IsFlagOn(CpuFlags.Zero);
         var negative = IsFlagOn(CpuFlags.Negative);
         var overflow = IsFlagOn(CpuFlags.Overflow);
@@ -415,7 +415,7 @@ public partial class Cpu
 
     private partial void Execute_JLT(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         var negative = IsFlagOn(CpuFlags.Negative);
         var overflow = IsFlagOn(CpuFlags.Overflow);
 
@@ -428,7 +428,7 @@ public partial class Cpu
 
     private partial void Execute_JGE(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         var negative = IsFlagOn(CpuFlags.Negative);
         var overflow = IsFlagOn(CpuFlags.Overflow);
 
@@ -441,7 +441,7 @@ public partial class Cpu
 
     private partial void Execute_JLE(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         var zero = IsFlagOn(CpuFlags.Zero);
         var negative = IsFlagOn(CpuFlags.Negative);
         var overflow = IsFlagOn(CpuFlags.Overflow);
@@ -455,7 +455,7 @@ public partial class Cpu
 
     private partial void Execute_CALL(byte opcode, ref ushort pcDelta)
     {
-        var target = _memory.ReadWord(_pc + 1);
+        var target = _mobo.ReadWord(_pc + 1);
         var returnAddress = (ushort)(_pc + 3);
         _callStack.Push(returnAddress);
         _pc = target;
@@ -471,14 +471,14 @@ public partial class Cpu
 
     private partial void Execute_PUSH(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
+        var x = _mobo.ReadByte(_pc + 1);
         var addr = _registers[x];
         _callStack.Push(addr);
     }
 
     private partial void Execute_POP(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1);
+        var x = _mobo.ReadByte(_pc + 1);
         var value = _callStack.Pop();
         _registers[x] = value;
     }
@@ -495,15 +495,15 @@ public partial class Cpu
         _tagMap[slotIndex] = attributes;
         var addr = Memory.OamStart + OamRegister;
         OamRegister += 4;
-        _memory.WriteByte(addr, (byte)_registers[x]);
-        _memory.WriteByte(addr + 1, (byte)_registers[y]);
-        _memory.WriteByte(addr + 2, spriteId);
-        _memory.WriteByte(addr + 3, attributes);
+        _mobo.WriteByte(addr, (byte)_registers[x]);
+        _mobo.WriteByte(addr + 1, (byte)_registers[y]);
+        _mobo.WriteByte(addr + 2, spriteId);
+        _mobo.WriteByte(addr + 3, attributes);
     }
 
     private partial void Execute_CLS(byte opcode, ref ushort pcDelta)
     {
-        var idx = _memory.ReadByte(_pc + 1) & 0x0F;
+        var idx = _mobo.ReadByte(_pc + 1) & 0x0F;
         var color = (byte)(_registers[idx] & 0xF);
         _mobo.ClearScreen(color);
     }
@@ -516,7 +516,7 @@ public partial class Cpu
     private partial void Execute_PLAY(byte opcode, ref ushort pcDelta)
     {
         var (channelReg, noteReg) = ReadRegisterArgs();
-        var instrumentReg = _memory.ReadByte(_pc + 2) & 0x0F;
+        var instrumentReg = _mobo.ReadByte(_pc + 2) & 0x0F;
 
         var channel = (byte)_registers[channelReg];
         var note = (byte)_registers[noteReg];
@@ -528,7 +528,7 @@ public partial class Cpu
 
     private partial void Execute_STOP(byte opcode, ref ushort pcDelta)
     {
-        var rChannel = _memory.ReadByte(_pc + 1);
+        var rChannel = _mobo.ReadByte(_pc + 1);
         var channel = (byte)_registers[rChannel];
         if (channel > 7)
             channel = (byte)7;
@@ -544,7 +544,7 @@ public partial class Cpu
     private partial void Execute_RND(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
-        var max = _memory.ReadWord(_pc + 1);
+        var max = _mobo.ReadWord(_pc + 1);
         _registers[x] = (ushort)_rng.Next(max);
     }
 
@@ -552,7 +552,7 @@ public partial class Cpu
     {
         var x = CursorPosX;
         var y = CursorPosY;
-        var charCode = _memory.ReadByte(_pc + 1);
+        var charCode = _mobo.ReadByte(_pc + 1);
         _mobo.DrawChar(x, y, charCode);
 
         CursorPosX++;
@@ -562,7 +562,7 @@ public partial class Cpu
 
     private partial void Execute_ATTR(byte opcode, ref ushort pcDelta)
     {
-        var attributes = _memory.ReadByte(_pc + 1);
+        var attributes = _mobo.ReadByte(_pc + 1);
         _mobo.SetTextAttributes(attributes);
     }
 
@@ -598,8 +598,8 @@ public partial class Cpu
 
     private partial void Execute_SETCRS(byte opcode, ref ushort pcDelta)
     {
-        var x = _memory.ReadByte(_pc + 1) & 0x1F;
-        var y = _memory.ReadByte(_pc + 2) & 0x1F;
+        var x = _mobo.ReadByte(_pc + 1) & 0x1F;
+        var y = _mobo.ReadByte(_pc + 2) & 0x1F;
 
         CursorPosX = x;
         CursorPosY = y;
@@ -618,9 +618,9 @@ public partial class Cpu
         var release = (byte)(r * 17);
 
         var addr = Memory.AudioRamStart + 32 + (instId * 4);
-        _memory.WriteByte(addr, attack);
-        _memory.WriteByte(addr + 1, decay);
-        _memory.WriteByte(addr + 2, sustain);
-        _memory.WriteByte(addr + 3, release);
+        _mobo.WriteByte(addr, attack);
+        _mobo.WriteByte(addr + 1, decay);
+        _mobo.WriteByte(addr + 2, sustain);
+        _mobo.WriteByte(addr + 3, release);
     }
 }
