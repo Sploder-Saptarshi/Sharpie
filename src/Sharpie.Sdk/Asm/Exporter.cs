@@ -34,8 +34,8 @@ public class Exporter
         if (!asFirmware)
         {
             writer.Write(Encoding.ASCII.GetBytes("SHRP"));
-            writer.Write(GetPaddedBytes(_title, 24));
-            writer.Write(GetPaddedBytes(_author, 14));
+            writer.Write(PadText(_title, 24));
+            writer.Write(PadText(_author, 14));
 
             writer.Write(_biosVersion);
             writer.Write(CalculateChecksum(romData));
@@ -45,7 +45,7 @@ public class Exporter
         writer.Write(romData);
     }
 
-    private byte[] GetPaddedBytes(string text, int maxLength)
+    private byte[] PadText(string text, int maxLength)
     {
         var bytes = Encoding.ASCII.GetBytes(text ?? "");
         if (bytes.Length > maxLength)

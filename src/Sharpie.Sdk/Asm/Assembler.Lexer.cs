@@ -14,6 +14,7 @@ public partial class Assembler
     private bool _isInAssetMode;
     private int _realCursor;
 
+    // TODO: Stop tokenizing OUT instructions by distinguishing between Debug and Release ROMs
     private void ReadFile()
     {
         if (FileContents == null)
