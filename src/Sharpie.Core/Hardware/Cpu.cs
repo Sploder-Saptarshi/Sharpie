@@ -10,7 +10,7 @@ internal enum CpuFlags : ushort
     Negative = 0x08,
 }
 
-public partial class Cpu
+internal partial class Cpu
 {
     private const int MaxOamSlots = 512;
     private readonly IMotherboard _mobo;
@@ -148,9 +148,14 @@ public partial class Cpu
     public void Reset()
     {
         Array.Clear(_registers, 0, _registers.Length);
-
-        _pc = Memory.RomStart;
+        _cursorPosX = 0;
+        _cursorPosY = 0;
+        _pc = 0;
+        FlagRegister = 0;
+        _tagMap = new byte[512];
+        _callStack = new();
         OamRegister = 0;
+        LoadDefaultPalette();
         IsHalted = false;
     }
 
@@ -181,6 +186,8 @@ public partial class Cpu
         byte opcode = _mobo.ReadByte(_pc);
 
         ExecuteOpcode(opcode, out ushort pcDelta);
+        if (IsHalted) // did we just halt?
+            return;
         Advance(pcDelta);
     }
 

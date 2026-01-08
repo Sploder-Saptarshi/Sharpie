@@ -3,7 +3,7 @@
 /// <summary>
 /// The memory of the Sharpie console.
 /// </summary>
-public class Memory
+internal class Memory
 {
     // Memory map:
     public const ushort RomStart = 0x0000;
@@ -11,7 +11,7 @@ public class Memory
     public const ushort OamStart = 0xE800;
     public const ushort WorkRamStart = 0xF000;
 
-    public const ushort ColorPaletteStart = 0xFA20; // 16 memory slots, one per color. Indexed as pointers to internal colors.
+    public const ushort ColorPaletteStart = 0xFFF0; // 16 memory slots, one per color. Indexed as pointers to internal colors.
     public const ushort AudioRamStart = 0xF800;
     public const ushort ReservedSpaceStart = 0xF800 + 544; // 0xFA20 - 0xFFFF is reserved. Not sure for what, but I reserved it. Might use it for BIOS.
     public const ushort InstrumentTableStart = AudioRamStart + 32;
@@ -74,4 +74,10 @@ public class Memory
         Array.Fill(_contents, value, startIndex, amount);
 
     public Span<byte> Slice(int from, int amount) => _contents.AsSpan(from, amount);
+
+    public void Dump(ushort start, ushort amount)
+    {
+        for (int i = start; i < start + amount; i++)
+            Console.WriteLine(_contents[i]);
+    }
 }

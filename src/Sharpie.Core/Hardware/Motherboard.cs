@@ -6,7 +6,7 @@ public class Motherboard : IMotherboard
 {
     private readonly Cpu _cpu;
     private readonly Ppu _ppu;
-    private readonly Apu _apu;
+    private static Apu? Apu { get; set; }
     private readonly Memory _ram;
     private readonly Memory _biosRom;
     private readonly Sequencer _sequencer;

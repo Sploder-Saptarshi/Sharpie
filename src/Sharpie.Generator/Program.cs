@@ -11,7 +11,7 @@ var ops =
 var sb = new StringBuilder();
 sb.AppendLine("// auto-generated");
 sb.AppendLine("namespace Sharpie.Core.Hardware;");
-sb.AppendLine("public partial class Cpu {");
+sb.AppendLine("internal partial class Cpu {");
 sb.AppendLine("    private void ExecuteOpcode(byte opcode, out ushort pcDelta) {");
 sb.AppendLine("        pcDelta = 0;");
 sb.AppendLine("        switch (opcode) {");

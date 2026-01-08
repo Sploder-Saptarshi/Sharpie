@@ -1,6 +1,6 @@
 namespace Sharpie.Core.Hardware;
 
-public partial class Cpu
+internal partial class Cpu
 {
     private partial void Execute_ALT(byte opcode, ref ushort pcDelta)
     {
@@ -9,11 +9,20 @@ public partial class Cpu
 
         switch (prefixed)
         {
-            case >= 0x10 and <= 0x1F: // LDM
+            case 0x10: // LDM
             {
-                pcDelta = 3;
-                var x = IndexFromOpcode(prefixed);
-                var address = _mobo.ReadWord(_pc + 1);
+                pcDelta = 4;
+                var x = _mobo.ReadByte(_pc + 1);
+                var address = _mobo.ReadWord(_pc + 2);
+                _registers[x] = _mobo.ReadByte(address);
+                break;
+            }
+
+            case 0x11: // LDP
+            {
+                pcDelta = 2;
+                var (x, y) = ReadRegisterArgs();
+                var address = _registers[y];
                 _registers[x] = _mobo.ReadByte(address);
                 break;
             }
@@ -56,7 +65,7 @@ public partial class Cpu
                 var (xReg, yReg) = ReadRegisterArgs();
                 var (sprIdReg, attrReg) = ReadRegisterArgs(2);
 
-                var oamSlot = _registers[rOamSlot] % (MaxOamSlots / 4);
+                var oamSlot = _registers[rOamSlot] % (2048 / 4);
                 var (x, y) = (_registers[xReg], _registers[yReg]);
                 var (sprId, attr) = (_registers[sprIdReg], _registers[attrReg]);
 
@@ -217,8 +226,14 @@ public partial class Cpu
                 break;
             }
 
+            case 0xFC: // MUTE
+            {
+                _mobo.StopAllSounds();
+                break;
+            }
+
             default:
-                Console.WriteLine($"Unknown Opcode: 0x{opcode:X2}");
+                Console.WriteLine($"Unknown ALT Opcode: 0x{opcode:X2}");
                 IsHalted = true;
                 pcDelta = 1;
                 break;

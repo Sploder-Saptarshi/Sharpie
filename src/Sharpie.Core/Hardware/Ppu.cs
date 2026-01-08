@@ -1,6 +1,6 @@
 namespace Sharpie.Core.Hardware;
 
-public partial class Ppu
+internal partial class Ppu
 {
     private const int DisplayHeight = 256;
     private const int DisplayWidth = 256;

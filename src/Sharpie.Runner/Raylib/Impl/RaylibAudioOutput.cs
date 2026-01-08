@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Raylib_cs;
 using Sharpie.Core.Drivers;
+using Sharpie.Core.Hardware;
 
 namespace Sharpie.Runner.RaylibCs.Impl;
 
@@ -21,11 +22,8 @@ public class RaylibAudioOutput : IAudioOutput
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static unsafe void AudioCallback(void* buffer, uint frames)
     {
-        if (Sharpie.Core.Hardware.Apu.Instance == null) // just in case it's still uninitialized
-            return;
-
         float* floatBuffer = (float*)buffer;
-        Sharpie.Core.Hardware.Apu.Instance.FillBufferRange(floatBuffer, frames);
+        Motherboard.FillAudioBufferRange(floatBuffer, frames);
     }
 
     public void HandleAudioBuffer(float[] audioBuffer) { }

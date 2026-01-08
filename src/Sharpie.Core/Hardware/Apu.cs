@@ -2,7 +2,7 @@ using Sharpie.Core.Drivers;
 
 namespace Sharpie.Core.Hardware;
 
-public class Apu
+internal class Apu
 {
     private IMotherboard _mobo;
 
@@ -23,12 +23,9 @@ public class Apu
     public Apu(IMotherboard mobo)
     {
         _mobo = mobo;
-
-        if (Instance == null)
-            Instance = this;
     }
 
-    public void Reset()
+    internal void Reset()
     {
         SequencerCounter = 0;
         for (int i = 0; i < 8; i++)
@@ -42,8 +39,6 @@ public class Apu
             _noiseTimer[i] = 0;
         }
     }
-
-    public static Apu? Instance { get; private set; }
 
     private enum AdsrStage : byte
     {

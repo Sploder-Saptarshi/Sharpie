@@ -2,7 +2,7 @@ using Sharpie.Core.Hardware;
 
 namespace Sharpie.Core.Drivers;
 
-public class Sequencer
+internal class Sequencer
 {
     private readonly IMotherboard _mobo;
     private int _cursor = 0;
@@ -14,6 +14,13 @@ public class Sequencer
         _mobo = mobo;
         if (Instance == null)
             Instance = this;
+    }
+
+    public void Reset()
+    {
+        Enabled = false;
+        _cursor = 0;
+        _delayFrames = 0;
     }
 
     public static Sequencer? Instance { get; private set; }
@@ -50,8 +57,8 @@ public class Sequencer
             }
             else if (channel == 0xFE) // GOTO
             {
-                var jumpAddr = (ushort)(duration | (instrument << 8));
-                _cursor = jumpAddr;
+                var stepsBack = (ushort)(duration | (instrument << 8));
+                _cursor -= 4 * stepsBack; // move the cursor 4 bytes back per step (since each packet is four bytes)
                 continue;
             }
             else if (note == 0)

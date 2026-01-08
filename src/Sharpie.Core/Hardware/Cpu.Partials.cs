@@ -1,6 +1,6 @@
 namespace Sharpie.Core.Hardware;
 
-public partial class Cpu
+internal partial class Cpu
 {
     private partial void Execute_MOV(byte opcode, ref ushort pcDelta)
     {
@@ -11,8 +11,15 @@ public partial class Cpu
 
     private partial void Execute_LDM(byte opcode, ref ushort pcDelta)
     {
-        var x = IndexFromOpcode(opcode);
-        var address = _mobo.ReadWord((_pc + 1));
+        var x = _mobo.ReadByte(_pc + 1);
+        var address = _mobo.ReadWord((_pc + 2));
+        _registers[x] = _mobo.ReadWord(address);
+    }
+
+    private partial void Execute_LDP(byte opcode, ref ushort pcDelta)
+    {
+        var (x, y) = ReadRegisterArgs();
+        var address = _registers[y];
         _registers[x] = _mobo.ReadWord(address);
     }
 
@@ -290,8 +297,12 @@ public partial class Cpu
 
     private partial void Execute_IMOD(byte opcode, ref ushort pcDelta)
     {
+        Console.WriteLine(
+            $"Executing IMOD with pc: {_pc} and pcDelta: {pcDelta}. Opcode: {opcode}"
+        );
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
+        Console.WriteLine($"x: {x} imm: {imm}");
 
         if (imm == 0)
         {
@@ -581,7 +592,7 @@ public partial class Cpu
 
     private partial void Execute_MUTE(byte opcode, ref ushort pcDelta)
     {
-        _mobo.StopAllSounds();
+        _mobo.ToggleSequencer();
     }
 
     private partial void Execute_COL(byte opcode, ref ushort pcDelta)
@@ -622,5 +633,23 @@ public partial class Cpu
         _mobo.WriteByte(addr + 1, decay);
         _mobo.WriteByte(addr + 2, sustain);
         _mobo.WriteByte(addr + 3, release);
+    }
+
+    private partial void Execute_OUT_R(byte opcode, ref ushort pcDelta)
+    {
+        var x = _mobo.ReadByte(_pc + 1);
+        _mobo.PushDebug($"Register {x} @ address ${_pc:X4}: {_registers[x]}");
+    }
+
+    private partial void Execute_OUT_B(byte opcode, ref ushort pcDelta)
+    {
+        var b = _mobo.ReadByte(_pc + 1);
+        _mobo.PushDebug($"8-bit value @ address ${_pc:X4}: {b}");
+    }
+
+    private partial void Execute_OUT_W(byte opcode, ref ushort pcDelta)
+    {
+        var w = _mobo.ReadWord(_pc + 1);
+        _mobo.PushDebug($"16-bit value @ address ${_pc:X4}: {w}");
     }
 }
