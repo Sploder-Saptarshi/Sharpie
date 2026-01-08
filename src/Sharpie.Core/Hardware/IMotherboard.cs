@@ -6,7 +6,7 @@ public interface IMotherboard
     public static readonly string VersionString =
         $"{BiosVersion.Major}.{BiosVersion.Minor}.{BiosVersion.Build}";
     public static ushort VersionBinFormat =>
-        (ushort)(BiosVersion.Major * 10000 + BiosVersion.Minor * 100 + BiosVersion.Build);
+        (ushort)(((BiosVersion.Major & 0xFF) << 8) | (BiosVersion.Minor & 0xFF));
     byte[] ControllerStates { get; }
     byte[,] TextGrid { get; }
     byte FontColorIndex { get; }
@@ -41,6 +41,9 @@ public interface IMotherboard
     void WriteWord(int address, ushort value);
 
     void FillRange(int startIndex, int amount, byte value);
+
+    void PushDebug(string message);
+    void ToggleSequencer();
 
     public static ReadOnlySpan<byte> SmallFont =>
         new byte[]

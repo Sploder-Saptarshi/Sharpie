@@ -11,7 +11,7 @@ public class Motherboard : IMotherboard
     private readonly Memory _biosRom;
     private readonly Sequencer _sequencer;
 
-    private bool _isInBootMode;
+    public bool IsInBootMode { get; private set; }
     private const ushort ReservedSpaceStart = Memory.ReservedSpaceStart;
 
     public byte FontColorIndex { get; private set; } = 1;
@@ -22,55 +22,64 @@ public class Motherboard : IMotherboard
 
     private readonly IDisplayOutput _displayDevice;
     private readonly IAudioOutput _audioDevice;
-    private readonly IInputHandler _inputDevice;
+    private readonly InputHandler _inputDevice;
+    private readonly DebugOutput? _dbg;
 
     private enum BiosFlagAddresses : ushort
     {
         MagicString = 0xFA20,
         Version = 0xFA24,
-        CartridgeBootState = 0xFA26,
+        CartVerificationState = 0xFA26,
+        IsCartLoaded = 0xFA28,
     }
 
-    public Motherboard(IDisplayOutput display, IAudioOutput audio, IInputHandler input)
+    public Motherboard(
+        IDisplayOutput display,
+        IAudioOutput audio,
+        InputHandler input,
+        DebugOutput? dbg = null
+    )
     {
         _ram = new Memory();
         _biosRom = new Memory();
-        _ram.FillRange(Memory.OamStart, 2048, 0xFF);
-        _biosRom.FillRange(Memory.OamStart, 2048, 0xFF);
+        ResetOam();
+
         _cpu = new Cpu(this);
+        _cpu.LoadDefaultPalette();
+        _cpu.Reset();
+
         _ppu = new Ppu(this);
-        _apu = new Apu(this);
-        _apu.LoadDefaultInstruments();
+
+        Apu = new Apu(this);
+        Apu.LoadDefaultInstruments();
 
         _sequencer = new Sequencer(this);
+
         for (int i = 0; i < 32; i++)
         for (int j = 0; j < 32; j++)
             TextGrid[i, j] = 0xFF;
-        _cpu.LoadDefaultPalette();
 
         _displayDevice = display;
         _audioDevice = audio;
         _inputDevice = input;
+        _dbg = dbg;
         SetupDisplay();
         SetupAudio();
-        _cpu.Reset();
-        _isInBootMode = true;
+        IsInBootMode = true;
     }
 
-    public void BootCartridge(Cartridge cart)
+    private void ResetOam()
     {
-        var bytesToLoad = Math.Min(cart.RomData.Length, Memory.OamStart); // capped to avoid any tomfoolery from manually edited files
-        _ram.LoadData(Memory.RomStart, cart.RomData.Take(bytesToLoad).ToArray());
-
-        _cpu.LoadPalette(cart.Palette);
-        _cpu.Reset();
-        Step();
+        _ram.FillRange(Memory.OamStart, 2048, 0xFF);
+        _biosRom.FillRange(Memory.OamStart, 2048, 0xFF);
     }
 
     public byte ReadByte(ushort address)
     {
-        if (_isInBootMode && address <= Memory.SpriteAtlasStart)
+        if (IsInBootMode && address <= Memory.SpriteAtlasStart)
+        {
             return _biosRom.ReadByte(address);
+        }
 
         return _ram.ReadByte(address);
     }
@@ -79,7 +88,7 @@ public class Motherboard : IMotherboard
 
     public ushort ReadWord(ushort address)
     {
-        if (_isInBootMode && address < Memory.SpriteAtlasStart)
+        if (IsInBootMode && address <= Memory.SpriteAtlasStart)
             return _biosRom.ReadWord(address);
 
         return _ram.ReadWord(address);
@@ -91,17 +100,11 @@ public class Motherboard : IMotherboard
     {
         _ram.WriteByte(address, value);
 
-        if (address != (ushort)BiosFlagAddresses.CartridgeBootState)
+        if (address != (ushort)BiosFlagAddresses.CartVerificationState || !IsInBootMode)
             return;
 
-        // TODO: Implement actual BIOS boot interop
         if (value == 0x01) // cart is ok, shove it to RAM
-        {
-            _isInBootMode = false;
-            return;
-        }
-        if (value == 0xFF) // cart is invalid, discard data
-            return;
+            BootIntoCartridge();
     }
 
     public void WriteByte(int address, byte value) => WriteByte((ushort)address, value);
@@ -110,17 +113,11 @@ public class Motherboard : IMotherboard
     {
         _ram.WriteWord(address, value);
 
-        if (address != (ushort)BiosFlagAddresses.CartridgeBootState)
+        if (address != (ushort)BiosFlagAddresses.CartVerificationState || !IsInBootMode)
             return;
 
-        // TODO: Implement actual BIOS boot interop
-        if (value == 0x01) // cart is ok, shove it to RAM
-        {
-            _isInBootMode = false;
-            return;
-        }
-        if (value == 0xFF) // cart is invalid, discard data
-            return;
+        if (value == 0x01) // cart is ok, swap RAM banks
+            BootIntoCartridge();
     }
 
     public void WriteWord(int address, ushort value) => WriteWord((ushort)address, value);
@@ -133,20 +130,43 @@ public class Motherboard : IMotherboard
     public void LoadBios(byte[] biosData)
     {
         _biosRom.LoadData(0, biosData);
+        _ram.WriteByte((ushort)BiosFlagAddresses.IsCartLoaded, 0x00); // no cart loaded
     }
 
-    public void BootCartridge(byte[] fileData)
+    public void LoadCartridge(byte[] fileData)
     {
-        var magic = System.Text.Encoding.ASCII.GetString(fileData, 0, 4);
-        if (magic == null)
-            throw new InvalidDataException("File is not large enough to be a Sharpie ROM.");
-        if (magic != "SHRP")
-            throw new FormatException("Not a valid Sharpie ROM: Invalid Header.");
+        try
+        {
+            var header = fileData.Take(64).ToArray();
+            for (int i = 0; i < 4; i++)
+                _ram.WriteByte((ushort)BiosFlagAddresses.MagicString + i, header[i]);
 
-        var romData = fileData.Skip(64).ToArray();
-        _ram.LoadData(0, romData);
-        // TODO: write first four bytes to MagicString, version to Version, and poll whether to load cartridge from CartridgeBootState
-        // So everything in here should get validated by the BIOS
+            _ram.WriteByte((ushort)BiosFlagAddresses.Version, header[42]); // header memory addresses 42 and 43 is where the
+            _ram.WriteByte((ushort)BiosFlagAddresses.Version + 1, header[43]); // minimum BIOS version required to run the cartridge lives
+
+            var cartData = fileData.Skip(64).ToArray();
+            _ram.LoadData(0, cartData);
+            _ram.WriteByte((ushort)BiosFlagAddresses.IsCartLoaded, 0x01); // yes cart loaded
+        }
+        catch
+        {
+            _ram.WriteByte((ushort)BiosFlagAddresses.IsCartLoaded, 0xFF); // not a rom
+        }
+    }
+
+    private void BootIntoCartridge()
+    {
+        _cpu.Halt();
+        IsInBootMode = false;
+        ResetOam();
+        StopAllSounds();
+        Apu?.Disable();
+        Apu?.Reset();
+        Apu?.LoadDefaultInstruments();
+        Apu?.Enable();
+        _sequencer.Reset();
+        _cpu.Reset();
+        _ram.Dump(Memory.InstrumentTableStart, 512);
     }
 
     public void SetupDisplay()
@@ -186,14 +206,7 @@ public class Motherboard : IMotherboard
     public void GetInputState()
     {
         var states = _inputDevice.GetInputState();
-
-        if (states.Length == 0) // not sure who would ever do this
-            return;
-        ControllerStates[0] = states[0];
-
-        if (states.Length == 1) // let's ensure no crashes
-            return;
-        ControllerStates[1] = states[1];
+        (ControllerStates[0], ControllerStates[1]) = (states.Item1, states.Item2);
     }
 
     public void PlayNote(byte channel, byte note, byte instrument)
@@ -203,7 +216,7 @@ public class Motherboard : IMotherboard
 
         var control = _ram.ReadByte(baseAddr + 3) & 1;
         if (control == 1) // gate is on, retrigger the envelope
-            _apu.RetriggerChannel(channel);
+            Apu?.RetriggerChannel(channel);
 
         _ram.WriteWord(baseAddr, (ushort)freq);
         _ram.WriteByte(baseAddr + 2, 0xFF);
@@ -270,11 +283,21 @@ public class Motherboard : IMotherboard
         return 0xFFFF;
     }
 
+    public void PushDebug(string message)
+    {
+        _dbg?.PushDebug(message);
+    }
+
+    public static unsafe void FillAudioBufferRange(float* writeBuffer, uint sampleCount) =>
+        Apu?.FillBufferRange(writeBuffer, sampleCount);
+
+    public void ToggleSequencer() => _sequencer.Enabled = !_sequencer.Enabled;
+
     public void Step()
     {
         for (var i = 0; i < 16000; i++)
         {
-            if (_cpu.IsAwaitingVBlank)
+            if (_cpu.IsAwaitingVBlank || _cpu.IsHalted)
                 break;
             _cpu.Cycle();
         }
