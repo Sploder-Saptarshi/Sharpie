@@ -217,16 +217,29 @@ internal class Apu
         return initial + correction;
     }
 
-    internal void FillBuffer(float[] writeBuffer)
+    public void FillBuffer(float[] writeBuffer, int sampleCount = -1)
     {
-        const float preGain = 0.15f;
+        const float preGain = 0.3f;
+        if (sampleCount < 0)
+            sampleCount = writeBuffer.Length;
 
         if (!_isEnabled)
-            for (int i = 0; i < writeBuffer.Length; i++)
-                writeBuffer[i] = 0;
-
-        for (var i = 0; i < writeBuffer.Length; i++)
         {
+            for (int i = 0; i < writeBuffer.Length; i++)
+            {
+                writeBuffer[i] = 0;
+            }
+            return;
+        }
+
+        for (var i = 0; i < sampleCount; i++)
+        {
+            if (++SequencerCounter >= 1024)
+            {
+                SequencerCounter -= 1024;
+                Sequencer.Instance?.Step();
+            }
+
             var mixedSample = 0f;
             for (var chan = 0; chan < 8; chan++)
             {
