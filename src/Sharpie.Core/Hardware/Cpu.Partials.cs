@@ -297,12 +297,8 @@ internal partial class Cpu
 
     private partial void Execute_IMOD(byte opcode, ref ushort pcDelta)
     {
-        Console.WriteLine(
-            $"Executing IMOD with pc: {_pc} and pcDelta: {pcDelta}. Opcode: {opcode}"
-        );
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
-        Console.WriteLine($"x: {x} imm: {imm}");
 
         if (imm == 0)
         {
