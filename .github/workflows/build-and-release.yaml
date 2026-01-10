@@ -64,11 +64,11 @@ jobs:
           echo "Sharpie SDK v0.1 - Drag a .asm file onto Sharpie-ASM$EXT to create a .shr cartridge." > ./pub-sdk/README.txt
 
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ../sharpie-runner-${{ matrix.rid }}.zip ./pub-runner/*
-            7z a ../sharpie-sdk-${{ matrix.rid }}.zip ./pub-sdk/*
+            7z a "sharpie-runner-${{ matrix.rid }}.zip" ./pub-runner/*
+            7z a "sharpie-sdk-${{ matrix.rid }}.zip" ./pub-sdk/*
           else
-            cd pub-runner && zip -r ../sharpie-runner-${{ matrix.rid }}.zip . && cd ..
-            cd pub-sdk && zip -r ../sharpie-sdk-${{ matrix.rid }}.zip . && cd ..
+            (cd pub-runner && zip -r ../sharpie-runner-${{ matrix.rid }}.zip .)
+            (cd pub-sdk && zip -r ../sharpie-sdk-${{ matrix.rid }}.zip .)
           fi
 
       - name: Create GitHub Release
