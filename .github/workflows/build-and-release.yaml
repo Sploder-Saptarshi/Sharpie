@@ -33,6 +33,12 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Debug Paths
+        run: |
+          ls -R .
+          echo "Matrix RID=${{ matrix.rid }}"
+          echo "Matrix SDK_BIN=${{ matrix.sdk_bin }}"
+
       - name: Publish Runner & SDK
         run: |
           dotnet publish ./src/Sharpie.Runner/RaylibCs/Sharpie.Runner.RaylibCs.csproj \
