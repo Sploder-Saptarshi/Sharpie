@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var json = File.ReadAllText("./src/Sharpie.Generator/res/opcodes.json");
+var json = File.ReadAllText("./tools/Sharpie.Generator/res/opcodes.json");
 JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 var ops =
     JsonSerializer.Deserialize<List<Opcode>>(json, options)
@@ -109,7 +109,7 @@ sb.AppendLine("");
 sb.AppendLine("    public static bool IsValidOpcode(string name)");
 sb.AppendLine("        => OpcodeTable.ContainsKey(name);");
 sb.AppendLine("}");
-File.WriteAllText("./src/Sharpie.Sdk/Asm/InstructionSet.g.cs", sb.ToString());
+File.WriteAllText("./tools/Sharpie.Sdk/Asm/InstructionSet.g.cs", sb.ToString());
 Console.WriteLine("Assembler opcode table generated successfuly. Great success!");
 
 return;
