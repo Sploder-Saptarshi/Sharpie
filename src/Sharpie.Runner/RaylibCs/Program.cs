@@ -37,11 +37,16 @@ unsafe
     var iconBytes = BiosLoader.GetEmbeddedIcon();
     fixed (byte* pData = iconBytes)
     {
-        var icon = Raylib.LoadImageFromMemory(".png", pData, iconBytes.Length);
-        if (Raylib.IsImageValid(icon))
+        byte[] ext = { (byte)'.', (byte)'p', (byte)'n', (byte)'g' };
+        fixed (byte* pExt = ext)
         {
-            Raylib.SetWindowIcon(icon);
-            Raylib.UnloadImage(icon);
+            var icon = Raylib.LoadImageFromMemory((sbyte*)pExt, pData, iconBytes.Length);
+
+            if (Raylib.IsImageValid(icon))
+            {
+                Raylib.SetWindowIcon(icon);
+                Raylib.UnloadImage(icon);
+            }
         }
     }
 }
