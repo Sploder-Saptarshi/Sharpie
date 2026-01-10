@@ -80,4 +80,4 @@ jobs:
             sharpie-sdk-${{ matrix.rid }}.zip
           body_path: assets/RELEASE_README.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
