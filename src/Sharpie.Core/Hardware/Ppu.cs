@@ -23,8 +23,8 @@ internal partial class Ppu
 
     private void GetSprite(byte index, byte attributes)
     {
-        var flipH = (attributes & 0x01) != 0;
-        var flipV = (attributes & 0x02) != 0;
+        var flipH = (attributes & 0b10000000) != 0;
+        var flipV = (attributes & 0b01000000) != 0;
 
         var spriteStartAddr = SpriteMemoryStart - (32 * (index + 1));
         for (int row = 0; row < 8; row++)
