@@ -40,7 +40,7 @@ jobs:
             -r ${{ matrix.rid }} \
             -o ./pub-runner
 
-          dotnet publish ./distr/sdk/Sharpie.Sdk/Sharpie.Sdk.csproj \
+          dotnet publish ./tools/Sharpie.Sdk/Sharpie.Sdk.csproj \
             -c Release \
             -r ${{ matrix.rid }} \
             -o ./pub-sdk
