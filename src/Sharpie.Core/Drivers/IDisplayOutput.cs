@@ -1,3 +1,5 @@
+namespace Sharpie.Core.Drivers;
+
 public interface IDisplayOutput
 {
     void Initialize(int internalResolution, string windowTitle);
