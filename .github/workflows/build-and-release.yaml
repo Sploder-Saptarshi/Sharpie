@@ -41,9 +41,9 @@ jobs:
 
       - name: Publish Runner & SDK
         run: |
-          dotnet publish ./src/Sharpie.Runner/RaylibCs/Sharpie.Runner.RaylibCs.csproj -c Release -r ${{ matrix.rid }} -o ./pub-runner -p:SelfContained=true
+          dotnet publish ./src/Sharpie.Runner/RaylibCs/Sharpie.Runner.RaylibCs.csproj -c Release -r ${{ matrix.rid }} -o ./pub-runner -p:SelfContained=true -p:UseAppHost=true
 
-          dotnet publish ./tools/Sharpie.Sdk/Sharpie.Sdk.csproj -c Release -r ${{ matrix.rid }} -o ./pub-sdk -p:SelfContained=true
+          dotnet publish ./tools/Sharpie.Sdk/Sharpie.Sdk.csproj -c Release -r ${{ matrix.rid }} -o ./pub-sdk -p:SelfContained=true -p:UseAppHost=true
 
       - name: Assemble Packages
         shell: bash
