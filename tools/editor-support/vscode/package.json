@@ -1,0 +1,23 @@
+{
+  "name": "sharpie-lang",
+  "displayName": "Sharpie Assembly",
+  "description": "Syntax highlighting for the Sharpie Fantasy Console",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [ "Programming Languages" ],
+  "contributes": {
+    "languages": [{
+      "id": "sharpie",
+      "aliases": ["Sharpie Assembly", "sharpie"],
+      "extensions": [".asm"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "sharpie",
+      "scopeName": "source.sharpie",
+      "path": "./sharpie.tmLanguage.json"
+    }]
+  }
+}

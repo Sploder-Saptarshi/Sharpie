@@ -112,6 +112,133 @@ sb.AppendLine("}");
 File.WriteAllText("./tools/Sharpie.Sdk/Asm/InstructionSet.g.cs", sb.ToString());
 Console.WriteLine("Assembler opcode table generated successfuly. Great success!");
 
+sb.Clear();
+sb.AppendLine("| Opcode | Mnemonic | Arguments | Length | Description | ALT Prefix Function |");
+sb.AppendLine("| :---: | :---: | :---: | :---: | :--- | :--- |");
+foreach (var op in ops)
+{
+    var hexStr = op.Family ? $"0x{op.IntHex:X1}n" : $"0x{op.IntHex:X2}";
+    var formattedPattern = "-";
+
+    if (!string.IsNullOrWhiteSpace(op.Pattern))
+    {
+        formattedPattern = "";
+        for (int i = 0; i < op.Pattern.Length; i++)
+        {
+            if (i == op.Pattern.Length - 1)
+                formattedPattern += op.Pattern[i];
+            else
+                formattedPattern += $"{op.Pattern[i]}, ";
+        }
+    }
+
+    sb.AppendLine(
+        $"| `{hexStr}` | **{op.Name}** | `{formattedPattern}` | {op.Len} | {op.Desc} | {op.Alt} |"
+    );
+}
+File.WriteAllText("./tools/Sharpie.Sdk/docs/ISA_REFERENCE.md", sb.ToString());
+Console.WriteLine("Assembly reference document generated. Long live the Empire.");
+
+var nvimOps = string.Join(" ", ops.Select(o => o.Name));
+sb.Clear();
+
+sb.AppendLine("\" Auto-generated Sharpie Syntax");
+sb.AppendLine("if exists(\"b:current_syntax\") | finish | endif");
+
+sb.AppendLine($"syn keyword sharpieOpcode {nvimOps}");
+
+sb.AppendLine(@"syn match sharpieRegister /\<[rR]\([0-9]\|1[0-5]\)\>/");
+sb.AppendLine(@"syn match sharpieHex /\$[0-9A-Fa-f]\+/");
+sb.AppendLine(@"syn match sharpieNote /#[A-Ga-g][#Bb]\?\d\+/");
+sb.AppendLine(@"syn match sharpieComment /;.*/");
+sb.AppendLine(@"syn match sharpieLabel /\<[A-Za-z_][A-Za-z0-9_]*:/");
+sb.AppendLine(@"syn match sharpieNumber /\(\$\|0x\)[0-9A-Fa-f]\+/");
+sb.AppendLine(@"syn match sharpieNumber /0b[01]\+/");
+sb.AppendLine(@"syn match sharpieNumber /\<\d\+\>/");
+sb.AppendLine(@"syn match sharpieDirective /\.[A-Z]\+/");
+
+sb.AppendLine(@"syn region sharpieString start=/\""/ end=/\""/ ");
+
+sb.AppendLine("let b:current_syntax = \"sharpie\"");
+
+sb.AppendLine("hi def link sharpieOpcode Statement");
+sb.AppendLine("hi def link sharpieRegister Type");
+sb.AppendLine("hi def link sharpieHex Constant");
+sb.AppendLine("hi def link sharpieNote Special");
+sb.AppendLine("hi def link sharpieComment Comment");
+sb.AppendLine("hi def link sharpieLabel Function");
+sb.AppendLine("hi def link sharpieNumber Number");
+sb.AppendLine("hi def link sharpieDirective PreProc");
+sb.AppendLine(@"hi def link sharpieString String");
+
+File.WriteAllText("./tools/editor-support/nvim/syntax/sharpie.vim", sb.ToString());
+Console.WriteLine("Neovim syntax generated. I'm running out of clever things to write.");
+
+var vsOps = string.Join("|", ops.Select(o => o.Name));
+string vscodeSyntax =
+    $@"{{
+  ""$schema"": ""https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"",
+  ""name"": ""Sharpie Assembly"",
+  ""patterns"": [
+    {{ ""name"": ""comment.line.semicolon.sharpie"", ""match"": "";.*"" }},
+    {{ ""name"": ""keyword.control.sharpie"", ""match"": ""\\b({vsOps})\\b"" }},
+    {{ ""name"": ""variable.parameter.register.sharpie"", ""match"": ""\\b[rR]([0-9]|1[0-5])\\b"" }},
+    {{ ""name"": ""constant.numeric.hex.sharpie"", ""match"": ""(\\$|0x)[0-9A-Fa-f]+\\b"" }},
+    {{ ""name"": ""entity.name.function.label.sharpie"", ""match"": ""^[A-Za-z_][A-Za-z0-9_]*:"" }},
+    {{ ""name"": ""keyword.other.directive.sharpie"", ""match"": ""\\.[A-Z]+\\b"" }}
+    {{ ""name"": ""string.quoted.double.sharpie"", ""begin"": ""\\\"""", ""end"": ""\\\"""" }},
+    {{ ""name"": ""constant.character.sharpie"", ""match"": ""'[^']'"" }},
+  ],
+  ""scopeName"": ""source.sharpie""
+}}";
+
+File.WriteAllText("./tools/editor-support/vscode/sharpie.tmLanguage.json", vscodeSyntax);
+
+var vscodePackage =
+    $@"{{
+  ""name"": ""sharpie-lang"",
+  ""displayName"": ""Sharpie Assembly"",
+  ""description"": ""Syntax highlighting for the Sharpie Fantasy Console"",
+  ""version"": ""0.1.0"",
+  ""engines"": {{
+    ""vscode"": ""^1.50.0""
+  }},
+  ""categories"": [ ""Programming Languages"" ],
+  ""contributes"": {{
+    ""languages"": [{{
+      ""id"": ""sharpie"",
+      ""aliases"": [""Sharpie Assembly"", ""sharpie""],
+      ""extensions"": ["".asm""],
+      ""configuration"": ""./language-configuration.json""
+    }}],
+    ""grammars"": [{{
+      ""language"": ""sharpie"",
+      ""scopeName"": ""source.sharpie"",
+      ""path"": ""./sharpie.tmLanguage.json""
+    }}]
+  }}
+}}"; // holy mess of double quotes
+
+File.WriteAllText("./tools/editor-support/vscode/package.json", vscodePackage);
+
+var vscodeConfig =
+    @"{
+  ""comments"": {
+    ""lineComment"": "";""
+  },
+  ""brackets"": [
+    [""["", ""]""],
+    [""("", "")""]
+  ],
+  ""autoClosingPairs"": [
+    { ""open"": ""\"""", ""close"": ""\"""" },
+    { ""open"": ""'"", ""close"": ""'"" }
+  ]
+}";
+
+File.WriteAllText("./tools/editor-support/vscode/language-configuration.json", vscodeConfig);
+Console.WriteLine("VS Code grammar generated. I think.");
+
 return;
 
 class Opcode
@@ -127,6 +254,9 @@ class Opcode
     public int Words { get; set; }
     public string Pattern { get; set; }
 
+    public string Desc { get; set; }
+    public string Alt { get; set; }
+
     [JsonConstructor]
     protected Opcode(
         string hex,
@@ -135,7 +265,9 @@ class Opcode
         string? logic,
         bool family,
         int words,
-        string pattern
+        string pattern,
+        string desc,
+        string alt
     )
     {
         Hex = hex;
@@ -145,5 +277,7 @@ class Opcode
         Family = family;
         Words = words;
         Pattern = pattern;
+        Desc = desc;
+        Alt = alt;
     }
 }
