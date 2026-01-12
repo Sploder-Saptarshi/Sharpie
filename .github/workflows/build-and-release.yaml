@@ -32,18 +32,6 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Install ImageMagick (ARM Only)
-        if: matrix.rid == 'win-arm64'
-        run: |
-          choco install imagemagick
-
-      - name: Convert ICO (Windows Only)
-        if: startsWith(matrix.rid, 'win')
-        shell: bash
-        run: |
-          magick assets/icons/icon.png -define icon:auto-resize=256,128,64,48,32,16 ./assets/icons/icon.ico
-          ls -lh assets/icons/icon.ico
-
       - name: Publish Runner & SDK
         run: |
           dotnet publish ./src/Sharpie.Runner/RaylibCs/Sharpie.Runner.RaylibCs.csproj -c Release -r ${{ matrix.rid }} -o ./pub-runner -p:SelfContained=true -p:UseAppHost=true
