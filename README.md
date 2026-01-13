@@ -1,12 +1,13 @@
 # Sharpie Console
 ![Sharpie Logo](https://raw.githubusercontent.com/ChristosMaragkos/Sharpie/refs/heads/main/assets/icons/icon_large.png)
 
-Sharpie is a 16-bit fantasy console implemented in C#. It is a powerhouse designed to get in your way as little as possible while mimicking how old NES- and SNES-era games were programmed. 
+Sharpie is a 16-bit fantasy console implemented in C#. It is a powerhouse designed to get in your way as little as possible while mimicking how old NES- and SNES-era games were programmed.
+It features its own custom Assembly language that facilitates most of what you'd need to not pull your hair out in the process of making a game.
 
-No high-level scripting languages. No modern luxuries. Just you and the CPU.
+No high-level scripting languages. Just you and the CPU.
 
 ## Hardware Specs
-* **CPU:** 16-bit custom RISC architecture.
+* **CPU:** 16-bit custom architecture.
 * **Registers:** 16 general-purpose registers (R0-R15).
 * **Memory:** 64KB of addressable space.
 * **Color:** An internal 32-color palette and 16 active colors at any time, with support for color swapping.
@@ -34,6 +35,9 @@ The Sharpie SDK handles your entire development pipeline.
 4.  **Assemble:** `Sharpie.Sdk -i mygame.asm`
 5.  **Run:**
     Drag your `.shr` file onto the Sharpie Runner and watch the magic happen.
+
+### Developer Support
+If you'd like to ask something specific about the Sharpie, feel free to open an [Issue](https://github.com/ChristosMaragkos/Sharpie/issues) or a [Discussion](https://github.com/ChristosMaragkos/Sharpie/discussions). The [Wiki](https://github.com/ChristosMaragkos/Sharpie/wiki) also contains much more nuanced info about the console's architecture.
 
 ##  Repository Structure
 * `/src`: The C# source code for the Sharpie as well as the runner interfaces.
