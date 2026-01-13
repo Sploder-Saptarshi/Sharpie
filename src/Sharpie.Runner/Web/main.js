@@ -1,18 +1,25 @@
 import { dotnet } from './_framework/dotnet.js'
 
-const { getAssemblyExports, getConfig, runMain } = await dotnet
-    .withDiagnosticTracing(false)
-    .create();
+const playButton = document.getElementById('play-button');
+const canvas = document.getElementById('canvas');
 
-const config = getConfig();
-const exports = await getAssemblyExports(config.mainAssemblyName);
+playButton.addEventListener('click', async () => {
+    playButton.classList.add('hidden');
+    
+    const { getAssemblyExports, getConfig, runMain } = await dotnet
+        .withDiagnosticTracing(false)
+        .create();
 
-dotnet.instance.Module['canvas'] = document.getElementById('canvas');
+    const config = getConfig();
+    const exports = await getAssemblyExports(config.mainAssemblyName);
 
-function mainLoop() {
-    exports.Sharpie.Runner.Web.Program.UpdateFrame();
+    dotnet.instance.Module['canvas'] = canvas;
+
+    function mainLoop() {
+        exports.Sharpie.Runner.Web.Program.UpdateFrame();
+        window.requestAnimationFrame(mainLoop);
+    }
+
+    await runMain();
     window.requestAnimationFrame(mainLoop);
-}
-
-await runMain();
-window.requestAnimationFrame(mainLoop);
+});

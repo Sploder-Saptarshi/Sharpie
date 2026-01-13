@@ -30,9 +30,6 @@
     <EmbeddedResource Include="../../../assets/bios/bios.bin">
       <LogicalName>bios.bin</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="../../../assets/icons/icon.png">
-      <LogicalName>icon.png</LogicalName>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +40,7 @@
   <ItemGroup>
     <WasmExtraFilesToDeploy Include="index.html" />
     <WasmExtraFilesToDeploy Include="main.js" />
+    <WasmExtraFilesToDeploy Include="../../../assets/icons/icon.png" />
     <NativeFileReference Include="raylib.a" />
   </ItemGroup>
 
