@@ -102,17 +102,6 @@ jobs:
             sharpie-runner-${{ matrix.rid }}.zip
             sharpie-sdk-${{ matrix.rid }}.zip
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: github.event_name == 'push'
-        with:
-          files: |
-            sharpie-runner-${{ matrix.rid }}.zip
-            sharpie-sdk-${{ matrix.rid }}.zip
-          body_path: assets/RELEASE_README.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
   build-web:
     runs-on: ubuntu-latest
     
@@ -155,11 +144,23 @@ jobs:
           name: sharpie-packages-web
           path: sharpie-runner-web.zip
 
-      - name: Create GitHub Release (Web)
-        uses: softprops/action-gh-release@v2
-        if: github.event_name == 'push'
+  release:
+    needs: [build, build-web]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          files: sharpie-runner-web.zip
+          path: artifacts
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.zip
           body_path: assets/RELEASE_README.md
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
