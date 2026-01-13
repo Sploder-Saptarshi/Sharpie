@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using Raylib_cs;
-using Sharpie.Runner.Web.Impl;
+using Sharpie.Runner.RaylibCs.Impl;
 
 namespace Sharpie.Runner.Web;
 
@@ -46,22 +46,31 @@ public partial class Program
                     var droppedFiles = Raylib.LoadDroppedFiles();
                     if (droppedFiles.Count > 0)
                     {
-                        var cartridgeFile = Marshal.PtrToStringUTF8((IntPtr)droppedFiles.Paths[0]);
+                        var cartridgeFile = Marshal.PtrToStringUTF8((nint)droppedFiles.Paths[0]);
                         if (cartridgeFile != null && cartridgeFile.EndsWith(".shr"))
                         {
-                            romBytes = File.ReadAllBytes(cartridgeFile);
-                            if (romBytes != null)
+                            // In WASM, file system access works differently
+                            // This is a placeholder - actual implementation may need JS interop
+                            try
                             {
-                                emulator.LoadCartridge(romBytes);
+                                romBytes = System.IO.File.ReadAllBytes(cartridgeFile);
+                                if (romBytes != null)
+                                {
+                                    emulator.LoadCartridge(romBytes);
+                                }
+                            }
+                            catch
+                            {
+                                // File access might not work in browser context
                             }
                         }
                         Raylib.UnloadDroppedFiles(droppedFiles);
                     }
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
-                Console.WriteLine($"Error loading ROM: {e.Message}");
+                System.Console.WriteLine($"Error loading ROM: {e.Message}");
             }
         }
 

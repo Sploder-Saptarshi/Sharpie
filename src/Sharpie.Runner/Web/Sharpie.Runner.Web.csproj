@@ -29,6 +29,14 @@
     <EmbeddedResource Include="../../../assets/bios/bios.bin">
       <LogicalName>bios.bin</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="../../../assets/icons/icon.png">
+      <LogicalName>icon.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Link shared implementation files from RaylibCs project -->
+    <Compile Include="../RaylibCs/Impl/*.cs" Link="Impl/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
