@@ -33,8 +33,16 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Build raylib from source for Windows on ARM
+      - name: Cache raylib DLL for Windows ARM64
         if: matrix.rid == 'win-arm64'
+        id: cache-raylib
+        uses: actions/cache@v4
+        with:
+          path: src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/raylib.dll
+          key: raylib-5.5-win-arm64
+
+      - name: Build raylib from source for Windows on ARM
+        if: matrix.rid == 'win-arm64' && steps.cache-raylib.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
