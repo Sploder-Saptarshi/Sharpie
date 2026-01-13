@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,6 +20,10 @@ jobs:
             rid: win-x64
             runner_bin: Sharpie.Runner.RaylibCs.exe
             sdk_bin: Sharpie.Sdk.exe
+          - os: windows-11-arm
+            rid: win-arm64
+            runner_bin: Sharpie.Runner.RaylibCs.exe
+            sdk_bin: Sharpie.Sdk.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +32,34 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
+
+      - name: Cache raylib DLL for Windows ARM64
+        if: matrix.rid == 'win-arm64'
+        id: cache-raylib
+        uses: actions/cache@v4
+        with:
+          path: src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/raylib.dll
+          key: raylib-5.5-win-arm64
+
+      - name: Build raylib from source for Windows on ARM
+        if: matrix.rid == 'win-arm64' && steps.cache-raylib.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
+          cd raylib
+          
+          mkdir build
+          cd build
+          
+          cmake .. -A ARM64 -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF
+          
+          cmake --build . --config Release
+          
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native"
+          
+          Copy-Item "raylib/Release/raylib.dll" "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/raylib.dll"
+          
+          Get-ChildItem "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/"
 
       - name: Publish Runner & SDK
         run: |
@@ -61,8 +94,17 @@ jobs:
             (cd pub-sdk && zip -r ../sharpie-sdk-${{ matrix.rid }}.zip .)
           fi
 
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sharpie-packages-${{ matrix.rid }}
+          path: |
+            sharpie-runner-${{ matrix.rid }}.zip
+            sharpie-sdk-${{ matrix.rid }}.zip
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        if: github.event_name == 'push'
         with:
           files: |
             sharpie-runner-${{ matrix.rid }}.zip
