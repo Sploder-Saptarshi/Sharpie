@@ -19,6 +19,10 @@ jobs:
             rid: win-x64
             runner_bin: Sharpie.Runner.RaylibCs.exe
             sdk_bin: Sharpie.Sdk.exe
+          - os: windows-11-arm
+            rid: win-arm64
+            runner_bin: Sharpie.Runner.RaylibCs.exe
+            sdk_bin: Sharpie.Sdk.exe
 
     steps:
       - uses: actions/checkout@v4
