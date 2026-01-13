@@ -104,6 +104,8 @@ jobs:
 
   build-web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
@@ -131,6 +133,13 @@ jobs:
         with:
           name: sharpie-packages-web
           path: sharpie-runner-web.zip
+
+      - name: Deploy Web Build to GitHub Pages
+        if: github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: src/Sharpie.Runner/Web/bin/Release/net10.0/browser-wasm/AppBundle
 
   release:
     needs: [build, build-web]
