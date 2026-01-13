@@ -4,8 +4,6 @@
 Sharpie is a 16-bit fantasy console implemented in C#. It is a powerhouse designed to get in your way as little as possible while mimicking how old NES- and SNES-era games were programmed.
 It features its own custom Assembly language that facilitates most of what you'd need to not pull your hair out in the process of making a game.
 
-No high-level scripting languages. Just you and the CPU.
-
 ## Hardware Specs
 * **CPU:** 16-bit custom architecture.
 * **Registers:** 16 general-purpose registers (R0-R15).
