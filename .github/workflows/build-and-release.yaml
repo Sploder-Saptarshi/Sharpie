@@ -33,6 +33,26 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Build raylib from source for Windows on ARM
+        if: matrix.rid == 'win-arm64'
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git
+          cd raylib
+          
+          mkdir build
+          cd build
+          
+          cmake .. -A ARM64 -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF
+          
+          cmake --build . --config Release
+          
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native"
+          
+          Copy-Item "raylib/Release/raylib.dll" "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/raylib.dll"
+          
+          Get-ChildItem "${{ github.workspace }}/src/Sharpie.Runner/RaylibCs/libs/win-arm64/native/"
+
       - name: Publish Runner & SDK
         run: |
           dotnet publish ./src/Sharpie.Runner/RaylibCs/Sharpie.Runner.RaylibCs.csproj -c Release -r ${{ matrix.rid }} -o ./pub-runner -p:SelfContained=true -p:UseAppHost=true

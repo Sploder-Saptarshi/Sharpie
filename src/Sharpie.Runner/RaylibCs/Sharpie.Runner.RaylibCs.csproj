@@ -50,4 +50,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="libs/win-arm64/native/raylib.dll" Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>raylib.dll</Link>
+    </Content>
+  </ItemGroup>
+
   </Project>
