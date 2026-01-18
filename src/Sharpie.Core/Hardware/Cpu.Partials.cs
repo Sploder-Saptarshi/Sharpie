@@ -590,6 +590,11 @@ internal partial class Cpu
         _mobo.StopAllSounds();
     }
 
+    private partial void Execute_FLIPR(byte opcode, ref ushort pcDelta)
+    {
+        FlipRegisterBanks();
+    }
+
     private partial void Execute_COL(byte opcode, ref ushort pcDelta)
     {
         var (rSource, rDest) = ReadRegisterArgs();
