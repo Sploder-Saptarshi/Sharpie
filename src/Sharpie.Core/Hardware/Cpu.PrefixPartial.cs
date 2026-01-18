@@ -14,7 +14,7 @@ internal partial class Cpu
                 pcDelta = 4;
                 var x = _mobo.ReadByte(_pc + 1);
                 var address = _mobo.ReadWord(_pc + 2);
-                _registers[x] = _mobo.ReadByte(address);
+                GetRegister(x) = _mobo.ReadByte(address);
                 break;
             }
 
@@ -22,8 +22,8 @@ internal partial class Cpu
             {
                 pcDelta = 2;
                 var (x, y) = ReadRegisterArgs();
-                var address = _registers[y];
-                _registers[x] = _mobo.ReadByte(address);
+                var address = GetRegister(y);
+                GetRegister(x) = _mobo.ReadByte(address);
                 break;
             }
 
@@ -32,7 +32,7 @@ internal partial class Cpu
             {
                 pcDelta = 3;
                 var x = IndexFromOpcode(prefixed);
-                var lowByte = (byte)((_registers[x] & 0x00FF));
+                var lowByte = (byte)((GetRegister(x) & 0x00FF));
                 var address = _mobo.ReadWord(_pc + 1);
                 _mobo.WriteByte(address, lowByte);
                 break;
@@ -65,9 +65,9 @@ internal partial class Cpu
                 var (xReg, yReg) = ReadRegisterArgs();
                 var (sprIdReg, attrReg) = ReadRegisterArgs(2);
 
-                var oamSlot = _registers[rOamSlot] % (2048 / 4);
-                var (x, y) = (_registers[xReg], _registers[yReg]);
-                var (sprId, attr) = (_registers[sprIdReg], _registers[attrReg]);
+                var oamSlot = GetRegister(rOamSlot) % (2048 / 4);
+                var (x, y) = (GetRegister(xReg), GetRegister(yReg));
+                var (sprId, attr) = (GetRegister(sprIdReg), GetRegister(attrReg));
 
                 if ((oamSlot * 4) == OamRegister)
                     OamRegister += 4;
@@ -84,7 +84,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = old + imm;
@@ -98,7 +98,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = old - imm;
@@ -112,7 +112,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = (ushort)(old * imm);
@@ -126,7 +126,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 if (imm == 0)
                 {
@@ -148,7 +148,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 if (imm == 0)
                 {
@@ -170,7 +170,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = (ushort)(old & imm);
@@ -186,7 +186,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = (ushort)(old | imm);
@@ -202,7 +202,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = (ushort)(old ^ imm);
@@ -218,7 +218,7 @@ internal partial class Cpu
                 pcDelta = 3;
                 var x = _mobo.ReadByte(_pc + 1);
                 var imm = _mobo.ReadByte(_pc + 2);
-                var ptr = _registers[x];
+                var ptr = GetRegister(x);
 
                 var old = _mobo.ReadWord(ptr);
                 var result = old - imm;
@@ -231,7 +231,7 @@ internal partial class Cpu
                 pcDelta = 2;
                 var x = _mobo.ReadByte(_pc + 1) & 0x0F; // truncate to register index since we tokenize it as a byte
                 Console.WriteLine($"X: {x}");
-                var digits = _registers[x].ToString();
+                var digits = GetRegister(x).ToString();
                 Console.WriteLine($"Value: {digits}");
                 const int FontZeroIndex = 26 - '0'; // this is the first number's index in the Sharpie font
                 foreach (var c in digits)

@@ -6,60 +6,60 @@ internal partial class Cpu
     {
         var (x, y) = ReadRegisterArgs();
 
-        _registers[x] = _registers[y];
+        GetRegister(x) = GetRegister(y);
     }
 
     private partial void Execute_LDM(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
         var address = _mobo.ReadWord((_pc + 2));
-        _registers[x] = _mobo.ReadWord(address);
+        GetRegister(x) = _mobo.ReadWord(address);
     }
 
     private partial void Execute_LDP(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
-        var address = _registers[y];
-        _registers[x] = _mobo.ReadWord(address);
+        var address = GetRegister(y);
+        GetRegister(x) = _mobo.ReadWord(address);
     }
 
     private partial void Execute_LDI(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
         var value = _mobo.ReadWord(_pc + 1);
-        _registers[x] = value;
+        GetRegister(x) = value;
     }
 
     private partial void Execute_STM(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
         var address = _mobo.ReadWord(_pc + 1);
-        _mobo.WriteWord(address, _registers[x]);
+        _mobo.WriteWord(address, GetRegister(x));
     }
 
     private partial void Execute_ADD(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = _registers[x] + _registers[y];
-        UpdateFlags(result, _registers[x], _registers[y]);
-        _registers[x] = (ushort)result;
+        var result = GetRegister(x) + GetRegister(y);
+        UpdateFlags(result, GetRegister(x), GetRegister(y));
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_SUB(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = (ushort)(_registers[x] - _registers[y]);
-        UpdateFlags(result, _registers[x], _registers[y], true);
-        _registers[x] = (ushort)result;
+        var result = (ushort)(GetRegister(x) - GetRegister(y));
+        UpdateFlags(result, GetRegister(x), GetRegister(y), true);
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_MUL(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        int result = _registers[x] * _registers[y];
+        int result = GetRegister(x) * GetRegister(y);
         var truncated = (ushort)result;
 
         UpdateLogicFlags(truncated);
@@ -71,11 +71,11 @@ internal partial class Cpu
     private partial void Execute_DIV(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
-        ushort valY = _registers[y];
+        ushort valY = GetRegister(y);
 
         if (valY == 0)
         {
-            _registers[x] = 0;
+            GetRegister(x) = 0;
 
             FlagRegister &= 0xFFF0;
             SetFlag(true, CpuFlags.Zero);
@@ -83,24 +83,24 @@ internal partial class Cpu
             return;
         }
 
-        var result = (ushort)(_registers[x] / valY);
+        var result = (ushort)(GetRegister(x) / valY);
 
         UpdateLogicFlags(result);
 
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_MOD(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
-        ushort valY = _registers[y];
+        ushort valY = GetRegister(y);
 
         if (valY == 0)
         {
-            _registers[x] = 0;
+            GetRegister(x) = 0;
 
             FlagRegister &= 0xFFF0;
             SetFlag(true, CpuFlags.Zero);
@@ -108,79 +108,79 @@ internal partial class Cpu
             return;
         }
 
-        var result = (ushort)(_registers[x] % valY);
+        var result = (ushort)(GetRegister(x) % valY);
         UpdateLogicFlags(result);
 
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_AND(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = (ushort)(_registers[x] & _registers[y]);
+        var result = (ushort)(GetRegister(x) & GetRegister(y));
         UpdateLogicFlags(result);
 
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_OR(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = (ushort)(_registers[x] | _registers[y]);
+        var result = (ushort)(GetRegister(x) | GetRegister(y));
         UpdateLogicFlags(result);
 
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_XOR(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = (ushort)(_registers[x] ^ _registers[y]);
+        var result = (ushort)(GetRegister(x) ^ GetRegister(y));
         UpdateLogicFlags(result);
 
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_SHL(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var shiftAmount = _registers[y] & 0x0F;
-        var original = _registers[x];
+        var shiftAmount = GetRegister(y) & 0x0F;
+        var original = GetRegister(x);
 
-        var result = _registers[x] << shiftAmount;
+        var result = GetRegister(x) << shiftAmount;
         var truncated = (ushort)result;
 
         UpdateLogicFlags(truncated);
         SetFlag(result > ushort.MaxValue, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = truncated;
+        GetRegister(x) = truncated;
     }
 
     private partial void Execute_SHR(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var shiftAmount = _registers[y] & 0x0F;
-        var original = _registers[x];
+        var shiftAmount = GetRegister(y) & 0x0F;
+        var original = GetRegister(x);
 
-        var result = (ushort)(_registers[x] >> shiftAmount);
+        var result = (ushort)(GetRegister(x) >> shiftAmount);
 
         UpdateLogicFlags(result);
         bool carry = false;
@@ -189,15 +189,15 @@ internal partial class Cpu
         SetFlag(carry, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_CMP(byte opcode, ref ushort pcDelta)
     {
         var (x, y) = ReadRegisterArgs();
 
-        var result = _registers[x] - _registers[y];
-        UpdateFlags(result, _registers[x], _registers[y], true);
+        var result = GetRegister(x) - GetRegister(y);
+        UpdateFlags(result, GetRegister(x), GetRegister(y), true);
     }
 
     private partial void Execute_ADC(byte opcode, ref ushort pcDelta)
@@ -205,45 +205,45 @@ internal partial class Cpu
         var (x, y) = ReadRegisterArgs();
 
         var carry = IsFlagOn(CpuFlags.Carry) ? 1 : 0;
-        var result = _registers[x] + _registers[y] + carry;
+        var result = GetRegister(x) + GetRegister(y) + carry;
     }
 
     private partial void Execute_INC(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var result = (ushort)(_registers[x] + 1);
-        UpdateFlags(result, _registers[x], 1);
-        _registers[x] = result;
+        var result = (ushort)(GetRegister(x) + 1);
+        UpdateFlags(result, GetRegister(x), 1);
+        GetRegister(x) = result;
     }
 
     private partial void Execute_DEC(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var result = _registers[x] - 1;
-        UpdateFlags(result, _registers[x], 1, true);
-        _registers[x] = (ushort)result;
+        var result = GetRegister(x) - 1;
+        UpdateFlags(result, GetRegister(x), 1, true);
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_NOT(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var result = (ushort)~_registers[x];
+        var result = (ushort)~GetRegister(x);
         UpdateLogicFlags(result);
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
 
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_NEG(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
 
-        var result = 0 - _registers[x];
+        var result = 0 - GetRegister(x);
 
-        UpdateFlags(result, 0, _registers[x], true);
+        UpdateFlags(result, 0, GetRegister(x), true);
 
-        _registers[x] = (ushort)result;
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_IADD(byte opcode, ref ushort pcDelta)
@@ -251,9 +251,9 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = _registers[x] + imm;
-        UpdateFlags(result, _registers[x], imm);
-        _registers[x] = (ushort)result;
+        var result = GetRegister(x) + imm;
+        UpdateFlags(result, GetRegister(x), imm);
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_ISUB(byte opcode, ref ushort pcDelta)
@@ -261,9 +261,9 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = _registers[x] - imm;
-        UpdateFlags(result, _registers[x], imm, true);
-        _registers[x] = (ushort)result;
+        var result = GetRegister(x) - imm;
+        UpdateFlags(result, GetRegister(x), imm, true);
+        GetRegister(x) = (ushort)result;
     }
 
     private partial void Execute_IMUL(byte opcode, ref ushort pcDelta)
@@ -271,9 +271,9 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = (ushort)(_registers[x] * imm);
+        var result = (ushort)(GetRegister(x) * imm);
         UpdateLogicFlags(result);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_IDIV(byte opcode, ref ushort pcDelta)
@@ -284,15 +284,15 @@ internal partial class Cpu
         if (imm == 0)
         {
             FlagRegister &= 0xFFF0;
-            _registers[x] = 0;
+            GetRegister(x) = 0;
             SetFlag(true, CpuFlags.Zero);
             SetFlag(true, CpuFlags.Overflow);
             return;
         }
 
-        var result = (ushort)(_registers[x] / imm);
+        var result = (ushort)(GetRegister(x) / imm);
         UpdateLogicFlags(result);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_IMOD(byte opcode, ref ushort pcDelta)
@@ -303,15 +303,15 @@ internal partial class Cpu
         if (imm == 0)
         {
             FlagRegister &= 0xFFF0;
-            _registers[x] = 0;
+            GetRegister(x) = 0;
             SetFlag(true, CpuFlags.Zero);
             SetFlag(true, CpuFlags.Overflow);
             return;
         }
 
-        var result = (ushort)(_registers[x] % imm);
+        var result = (ushort)(GetRegister(x) % imm);
         UpdateLogicFlags(result);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_IAND(byte opcode, ref ushort pcDelta)
@@ -319,11 +319,11 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = (ushort)(_registers[x] & imm);
+        var result = (ushort)(GetRegister(x) & imm);
         UpdateLogicFlags(result);
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_IOR(byte opcode, ref ushort pcDelta)
@@ -331,11 +331,11 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = (ushort)(_registers[x] | imm);
+        var result = (ushort)(GetRegister(x) | imm);
         UpdateLogicFlags(result);
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_IXOR(byte opcode, ref ushort pcDelta)
@@ -343,11 +343,11 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = (ushort)(_registers[x] ^ imm);
+        var result = (ushort)(GetRegister(x) ^ imm);
         UpdateLogicFlags(result);
         SetFlag(false, CpuFlags.Carry);
         SetFlag(false, CpuFlags.Overflow);
-        _registers[x] = result;
+        GetRegister(x) = result;
     }
 
     private partial void Execute_ICMP(byte opcode, ref ushort pcDelta)
@@ -355,28 +355,28 @@ internal partial class Cpu
         var x = _mobo.ReadByte(_pc + 1);
         var imm = _mobo.ReadByte(_pc + 2);
 
-        var result = _registers[x] - imm;
-        UpdateFlags(result, _registers[x], imm, true);
+        var result = GetRegister(x) - imm;
+        UpdateFlags(result, GetRegister(x), imm, true);
     }
 
     private partial void Execute_DINC(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var word = _mobo.ReadWord(_registers[x]);
+        var word = _mobo.ReadWord(GetRegister(x));
 
         var result = word + 1;
-        UpdateFlags(result, _registers[x], 1);
-        _mobo.WriteWord(_registers[x], (ushort)result);
+        UpdateFlags(result, GetRegister(x), 1);
+        _mobo.WriteWord(GetRegister(x), (ushort)result);
     }
 
     private partial void Execute_DDEC(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var word = _mobo.ReadWord(_registers[x]);
+        var word = _mobo.ReadWord(GetRegister(x));
 
         var result = word - 1;
-        UpdateFlags(result, _registers[x], 1, true);
-        _mobo.WriteWord(_registers[x], (ushort)result);
+        UpdateFlags(result, GetRegister(x), 1, true);
+        _mobo.WriteWord(GetRegister(x), (ushort)result);
     }
 
     private partial void Execute_JMP(byte opcode, ref ushort pcDelta)
@@ -479,7 +479,7 @@ internal partial class Cpu
     private partial void Execute_PUSH(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        var addr = _registers[x];
+        var addr = GetRegister(x);
         _callStack.Push(addr);
     }
 
@@ -487,7 +487,7 @@ internal partial class Cpu
     {
         var x = _mobo.ReadByte(_pc + 1);
         var value = _callStack.Pop();
-        _registers[x] = value;
+        GetRegister(x) = value;
     }
 
     private partial void Execute_DRAW(byte opcode, ref ushort pcDelta)
@@ -495,15 +495,15 @@ internal partial class Cpu
         var x = IndexFromOpcode(opcode);
         var (y, sprIdReg) = ReadRegisterArgs();
         var (attrReg, oamSlotReg) = ReadRegisterArgs(2);
-        var spriteId = (byte)_registers[sprIdReg];
-        var attributes = (byte)_registers[attrReg];
+        var spriteId = (byte)GetRegister(sprIdReg);
+        var attributes = (byte)GetRegister(attrReg);
         var slotIndex = OamRegister / 4;
-        _registers[oamSlotReg] = (ushort)slotIndex;
+        GetRegister(oamSlotReg) = (ushort)slotIndex;
         _tagMap[slotIndex] = attributes;
         var addr = Memory.OamStart + OamRegister;
         OamRegister += 4;
-        _mobo.WriteByte(addr, (byte)_registers[x]);
-        _mobo.WriteByte(addr + 1, (byte)_registers[y]);
+        _mobo.WriteByte(addr, (byte)GetRegister(x));
+        _mobo.WriteByte(addr + 1, (byte)GetRegister(y));
         _mobo.WriteByte(addr + 2, spriteId);
         _mobo.WriteByte(addr + 3, attributes);
     }
@@ -511,7 +511,7 @@ internal partial class Cpu
     private partial void Execute_CLS(byte opcode, ref ushort pcDelta)
     {
         var idx = _mobo.ReadByte(_pc + 1) & 0x0F;
-        var color = (byte)(_registers[idx] & 0xF);
+        var color = (byte)(GetRegister(idx) & 0xF);
         _mobo.ClearScreen(color);
     }
 
@@ -525,9 +525,9 @@ internal partial class Cpu
         var (channelReg, noteReg) = ReadRegisterArgs();
         var instrumentReg = _mobo.ReadByte(_pc + 2) & 0x0F;
 
-        var channel = (byte)_registers[channelReg];
-        var note = (byte)_registers[noteReg];
-        var instrument = (byte)_registers[instrumentReg];
+        var channel = (byte)GetRegister(channelReg);
+        var note = (byte)GetRegister(noteReg);
+        var instrument = (byte)GetRegister(instrumentReg);
         if (channel > 7)
             channel = 7;
         _mobo.PlayNote(channel, note, instrument);
@@ -536,7 +536,7 @@ internal partial class Cpu
     private partial void Execute_STOP(byte opcode, ref ushort pcDelta)
     {
         var rChannel = _mobo.ReadByte(_pc + 1);
-        var channel = (byte)_registers[rChannel];
+        var channel = (byte)GetRegister(rChannel);
         if (channel > 7)
             channel = (byte)7;
         _mobo.StopChannel(channel);
@@ -545,14 +545,14 @@ internal partial class Cpu
     private partial void Execute_INPUT(byte opcode, ref ushort pcDelta)
     {
         var (rController, rDest) = ReadRegisterArgs();
-        _registers[rDest] = _mobo.ControllerStates[_registers[rController] & 1];
+        GetRegister(rDest) = _mobo.ControllerStates[GetRegister(rController) & 1];
     }
 
     private partial void Execute_RND(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
         var max = _mobo.ReadWord(_pc + 1);
-        _registers[x] = (ushort)_rng.Next(max);
+        GetRegister(x) = (ushort)_rng.Next(max);
     }
 
     private partial void Execute_TEXT(byte opcode, ref ushort pcDelta)
@@ -574,13 +574,13 @@ internal partial class Cpu
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta)
     {
         var (oldIndex, newIndex) = ReadRegisterArgs();
-        _mobo.SwapColor((byte)(_registers[oldIndex] & 0x0F), (byte)(_registers[newIndex] & 0x1F));
+        _mobo.SwapColor((byte)(GetRegister(oldIndex) & 0x0F), (byte)(GetRegister(newIndex) & 0x1F));
     }
 
     private partial void Execute_SONG(byte opcode, ref ushort pcDelta)
     {
         var x = IndexFromOpcode(opcode);
-        var songAddr = _registers[x];
+        var songAddr = GetRegister(x);
         _mobo.StartSequencer(songAddr);
     }
 
@@ -593,13 +593,13 @@ internal partial class Cpu
     private partial void Execute_COL(byte opcode, ref ushort pcDelta)
     {
         var (rSource, rDest) = ReadRegisterArgs();
-        _registers[rDest] = _mobo.CheckCollision(_registers[rSource]);
+        GetRegister(rDest) = _mobo.CheckCollision(GetRegister(rSource));
     }
 
     private partial void Execute_TAG(byte opcode, ref ushort pcDelta)
     {
         var (rSource, rDest) = ReadRegisterArgs();
-        _registers[rDest] = _tagMap[rSource > 512 ? 0 : rSource];
+        GetRegister(rDest) = _tagMap[rSource > 512 ? 0 : rSource];
     }
 
     private partial void Execute_SETCRS(byte opcode, ref ushort pcDelta)
@@ -614,7 +614,7 @@ internal partial class Cpu
     private partial void Execute_INSTR(byte opcode, ref ushort pcDelta)
     {
         var instIdReg = IndexFromOpcode(opcode);
-        var instId = _registers[instIdReg];
+        var instId = GetRegister(instIdReg);
         var (a, d) = ReadRegisterArgs(); // not register args but still 4-bit values
         var (s, r) = ReadRegisterArgs(2);
 
@@ -633,7 +633,7 @@ internal partial class Cpu
     private partial void Execute_OUT_R(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        _mobo.PushDebug($"Register {x} @ address ${_pc:X4}: {_registers[x]}");
+        _mobo.PushDebug($"Register {x} @ address ${_pc:X4}: {GetRegister(x)}");
     }
 
     private partial void Execute_OUT_B(byte opcode, ref ushort pcDelta)
