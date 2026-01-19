@@ -38,6 +38,15 @@ internal class OamBank
         );
     }
 
+    [Flags]
+    public enum SpriteFlags : byte
+    {
+        FlipH = 1,
+        FlipV = 2,
+        Hud = 4,
+        Background = 8,
+    }
+
     private byte ReadByte(int address)
     {
         return _contents[address];
