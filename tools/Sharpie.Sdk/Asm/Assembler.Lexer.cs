@@ -35,6 +35,12 @@ public partial class Assembler
             if (IsLineEmpty(cleanLine))
                 continue;
 
+            if (line == "END-INCLUDE-ABCDEFGHIJKLMNOPQRSTUVWXYZ-BANANA")
+            {
+                lineNum = 0;
+                continue;
+            }
+
             var isAssetDirective =
                 cleanLine.StartsWith(".SPRITE")
                 || cleanLine.StartsWith(".DB")
@@ -101,9 +107,9 @@ public partial class Assembler
                 $"Unexpected token: {valueStr} - expected a number",
                 lineNumber
             );
-        if (value > ushort.MaxValue || value < 0 || value == null)
+        if (value > ushort.MaxValue)
             throw new AssemblySyntaxException(
-                $"Number {value} cannot be larger than {ushort.MaxValue} or smaller than zero",
+                $"Number {value} cannot be larger than {ushort.MaxValue}.",
                 lineNumber
             );
 
@@ -406,6 +412,7 @@ public partial class Assembler
             }
             expandedLines.Add(line);
         }
+        expandedLines.Add("END-INCLUDE-ABCDEFGHIJKLMNOPQRSTUVWXYZ-BANANA"); // technically this means if you write that you trick the assembler. I don't care.
         return expandedLines;
     }
 }

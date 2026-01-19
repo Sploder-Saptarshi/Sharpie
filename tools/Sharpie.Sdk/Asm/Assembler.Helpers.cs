@@ -14,6 +14,10 @@ public partial class Assembler
             return ParseNote(input.Substring(1));
         }
 
+        bool negative = input.StartsWith('-');
+        if (negative)
+            input = new string(input.Skip(1).ToArray());
+
         bool startsWithDollar = input.StartsWith('$'); // a dollar? oh, that's a big problem
         bool startsWith0x = input.StartsWith("0x", StringComparison.OrdinalIgnoreCase);
         bool startsWith0b = input.StartsWith("0b", StringComparison.OrdinalIgnoreCase);
@@ -55,7 +59,7 @@ public partial class Assembler
             if (result > limit)
                 return null;
 
-            return result;
+            return !negative ? result : -result;
         }
         catch
         {
@@ -78,7 +82,7 @@ public partial class Assembler
             return addr;
 
         var num = ParseNumberLiteral(arg, true);
-        if (num.HasValue && num.Value >= 0 && num.Value <= ushort.MaxValue)
+        if (num.HasValue && num.Value <= ushort.MaxValue)
             return (ushort)num;
 
         throw new AssemblySyntaxException(
