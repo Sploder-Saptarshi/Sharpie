@@ -8,21 +8,15 @@ internal class Memory
     // Memory map:
     public const ushort RomStart = 0x0000;
     public const ushort SpriteAtlasStart = 0xE7FF;
-    public const ushort OamStart = 0xE800;
-    public const ushort WorkRamStart = 0xF000;
+    public const ushort WorkRamStart = 0xE800;
 
     public const ushort ColorPaletteStart = 0xFFF0; // 16 memory slots, one per color. Indexed as pointers to internal colors.
     public const ushort AudioRamStart = 0xF800;
     public const ushort ReservedSpaceStart = 0xF800 + 544; // 0xFA20 - 0xFFFF is reserved. Not sure for what, but I reserved it. Might use it for BIOS.
     public const ushort InstrumentTableStart = AudioRamStart + 32;
 
-    // The actual RAM chip
     private readonly byte[] _contents = new byte[65536];
 
-    /// <summary>
-    /// Reads a byte from memory as an 8 bit integer
-    /// </summary>
-    /// <param name="address">The address of the byte, usually Program Counter + 1</param>
     public byte ReadByte(ushort address)
     {
         return _contents[address]; //ushort caps at last ram index anyways
@@ -37,10 +31,6 @@ internal class Memory
 
     public void WriteByte(int address, byte value) => WriteByte((ushort)address, value);
 
-    /// <summary>
-    /// Formats two bytes into a 16 bit integer from memory. Little Endian.
-    /// </summary>
-    /// <param name="address">The address of the low byte of the word, usually Program Counter + 1</param>
     public ushort ReadWord(ushort address)
     {
         var lowByte = _contents[address];
@@ -62,7 +52,6 @@ internal class Memory
 
     public void WriteWord(int address, ushort value) => WriteWord((ushort)address, value);
 
-    // Good for dumping roms to memory
     public void LoadData(ushort startAddress, byte[] data)
     {
         Array.Copy(data, 0, _contents, startAddress, data.Length);
