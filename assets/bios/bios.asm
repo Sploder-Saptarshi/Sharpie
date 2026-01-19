@@ -207,7 +207,7 @@ InvalidCart:
     .STR 8, 12 "Invalid Cartridge"
 
     LDI r0, 0
-    STM r0, MAGICADDR::IS_CART_LOADED_ADDR ; Disregard the currently loaded cartridge
+    ALT STM r0, MAGICADDR::IS_CART_LOADED_ADDR ; Disregard the currently loaded cartridge
 
     LDI r15, 120
     CALL WaitR15Frames
