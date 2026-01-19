@@ -2,10 +2,10 @@
 | :---: | :---: | :---: | :---: | :--- | :--- |
 | `0x00` | **NOP** | `-` | 1 | No operation. |  |
 | `0x01` | **MOV** | `R, R` | 2 | Copy value from R2 to R1. |  |
-| `0x10` | **LDM** | `R, W` | 4 | Load 16-bit word from address W to R. | Load 8-bit byte from address W. |
-| `0x11` | **LDP** | `R, R` | 2 | Load word from [R2] into R1. | Load 8-bit byte from [R2]. |
+| `0x10` | **LDM** | `R, W` | 4 | Load 16-bit word from address W to R. | Load single byte from address W. |
+| `0x11` | **LDP** | `R, R` | 2 | Load word from [R2] into R1. | Load single byte from [R2]. |
 | `0x20n` | **LDI** | `R, W` | 3 | Load immediate word W into Rn. |  |
-| `0x30n` | **STM** | `R, W` | 3 | Store word from Rn to address W. | Store 8-bit byte from Rn to W. |
+| `0x30n` | **STM** | `R, W` | 3 | Store word from R to address W. | Store the low byte of R to W. |
 | `0x40` | **ADD** | `R, R` | 2 | R1 = R1 + R2. Updates Z, N, C, V. |  |
 | `0x41` | **SUB** | `R, R` | 2 | R1 = R1 - R2. Updates Z, N, C, V. |  |
 | `0x42` | **MUL** | `R, R` | 2 | R1 = R1 * R2. Sets C/V if result > 65535. |  |

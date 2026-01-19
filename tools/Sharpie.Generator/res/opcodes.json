@@ -2,10 +2,10 @@
     { "hex": "0x00", "name": "NOP",    "len": 1, "logic": "" , "words": 0 , "pattern": "", "desc": "No operation.", "alt": "" },
     { "hex": "0x01", "name": "MOV",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Copy value from R2 to R1.", "alt": "" },
   
-    { "hex": "0x10", "name": "LDM",    "len": 4, "logic": null, "words": 2 , "pattern": "RW", "desc": "Load 16-bit word from address W to R.", "alt": "Load 8-bit byte from address W." },
-    { "hex": "0x11", "name": "LDP",    "len": 2, "logic": null, "words": 2 , "pattern": "RR", "desc": "Load word from [R2] into R1.", "alt": "Load 8-bit byte from [R2]." },
+    { "hex": "0x10", "name": "LDM",    "len": 4, "logic": null, "words": 2 , "pattern": "RW", "desc": "Load 16-bit word from address W to R.", "alt": "Load single byte from address W." },
+    { "hex": "0x11", "name": "LDP",    "len": 2, "logic": null, "words": 2 , "pattern": "RR", "desc": "Load word from [R2] into R1.", "alt": "Load single byte from [R2]." },
     { "hex": "0x20", "name": "LDI",    "len": 3, "logic": null, "family": true , "words": 2 , "pattern": "RW", "desc": "Load immediate word W into Rn.", "alt": "" },
-    { "hex": "0x30", "name": "STM",    "len": 3, "logic": null, "family": true , "words": 2 , "pattern": "RW", "desc": "Store word from Rn to address W.", "alt": "Store 8-bit byte from Rn to W." },
+    { "hex": "0x30", "name": "STM",    "len": 3, "logic": null, "family": true , "words": 2 , "pattern": "RW", "desc": "Store word from R to address W.", "alt": "Store the low byte of R to W." },
   
     { "hex": "0x40", "name": "ADD",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "R1 = R1 + R2. Updates Z, N, C, V.", "alt": "" },
     { "hex": "0x41", "name": "SUB",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "R1 = R1 - R2. Updates Z, N, C, V.", "alt": "" },
