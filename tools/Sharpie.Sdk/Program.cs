@@ -175,10 +175,13 @@ internal class Program
             var missing = new List<string>();
             if (string.IsNullOrWhiteSpace(input))
                 missing.Add("-i / --input");
-            if (string.IsNullOrWhiteSpace(title) && !firmware)
-                missing.Add("-t / --title");
-            if (string.IsNullOrWhiteSpace(author) && !firmware)
-                missing.Add("-a / --author");
+            if (!firmware)
+            {
+                if (string.IsNullOrWhiteSpace(title) && !firmware)
+                    missing.Add("-t / --title");
+                if (string.IsNullOrWhiteSpace(author) && !firmware)
+                    missing.Add("-a / --author");
+            }
 
             if (missing.Count > 0)
             {
@@ -187,8 +190,8 @@ internal class Program
             }
 
             romManifest = new ProjectManifest(
-                title,
-                author,
+                !firmware ? author : "",
+                !firmware ? author : "",
                 input,
                 string.IsNullOrWhiteSpace(output)
                     ? Path.ChangeExtension(input, firmware ? ".bin" : ".shr")

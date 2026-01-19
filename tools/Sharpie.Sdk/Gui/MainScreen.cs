@@ -281,6 +281,8 @@ public class MainScreen
             _successfulBuild = false;
             return;
         }
+        if (_manifest.IsFirmware)
+            _manifest.Palette = ProjectManifest.DefaultPalette();
         try
         {
             Program.AssembleRom(
@@ -296,6 +298,7 @@ public class MainScreen
         }
         catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             _errorMsg = e.Message;
             _successfulBuild = false;
         }
