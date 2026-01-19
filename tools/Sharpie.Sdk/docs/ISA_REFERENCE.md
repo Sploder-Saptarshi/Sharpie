@@ -49,9 +49,12 @@
 | `0x7D` | **OUT_W** | `W` | 3 | Log immediate word W to debug console. |  |
 | `0x80n` | **RND** | `R, W` | 3 | Family. Random (0 to W-1) into Rn. |  |
 | `0x90` | **FLIPR** | `-` | 1 | Flips between using registers 0-15 and 16-31. |  |
+| `0x91` | **CAM** | `R, R` | 2 | Relatively moves camera by the values in (rX,rY). The values in rX and rY are treated as signed. | Sets the camera position to (rX,rY) |
+| `0x92` | **GETOAM** | `R` | 2 | Copies the current value of the OAM cursor to rX. |  |
+| `0x93` | **SETOAM** | `R` | 2 | Sets the value of the OAM cursor to the value in rX |  |
 | `0xA0n` | **SONG** | `R` | 1 | Family. Start music from address in Rn. |  |
 | `0xC0` | **SETCRS** | `B, B` | 3 | Set text cursor to (X, Y). | Relative Move cursor by (X, Y). |
-| `0xD0n` | **DRAW** | `R, R, R, R, R` | 3 | Family. Draw sprite: X, Y, ID, Attr, SlotOut. | Manual Slot: Use Rn as OAM slot index. |
+| `0xD0n` | **DRAW** | `R, R, R, R` | 3 | Family. Draw sprite: X, Y, ID, Attr. & Type (Low byte -> attr, high byte -> type) |  |
 | `0xE0n` | **INSTR** | `R, B, B` | 3 | Family. Define ADSR for instrument Rn. |  |
 | `0xF0` | **TAG** | `R, R` | 2 | Read Attribute of OAM[R1] into R2. |  |
 | `0xF1` | **CLS** | `R` | 2 | Clear screen with color in R. | Hard Clear: Wipe screen and reset OAM. |
