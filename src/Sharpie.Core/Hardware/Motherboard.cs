@@ -299,6 +299,9 @@ internal class Motherboard : IMotherboard
     public static unsafe void FillAudioBufferRange(float* audioBuffer, uint sampleAmount) =>
         Apu?.FillBufferRange(audioBuffer, sampleAmount);
 
+    public static void FillAudioBufferRange(float[] audioBuffer, int sampleAmount) =>
+        Apu?.FillBufferRange(audioBuffer, sampleAmount);
+
     public void ToggleSequencer() => _sequencer.Enabled = !_sequencer.Enabled;
 
     public void Step()
