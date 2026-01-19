@@ -269,30 +269,30 @@ internal class Motherboard : IMotherboard
         _sequencer.LoadSong(address);
     }
 
-    public ushort CheckCollision(int sprIdSrc)
+    public ushort CheckCollision(int srcIndex)
     {
-        var xSrc = _ram.ReadByte(Memory.OamStart + sprIdSrc);
-        var ySrc = _ram.ReadByte(Memory.OamStart + sprIdSrc + 1);
-        for (int i = 0; i < 2048; i += 4)
+        var (x, y, id, attr, type) = _oam.ReadEntry(srcIndex);
+
+        for (var i = 0; i < OamBank.MaxEntries; i++)
         {
-            var sprId = _ram.ReadByte(Memory.OamStart + i + 2);
-            if (sprId == sprIdSrc)
-                continue; // don't check against self
+            if (i == srcIndex)
+                continue;
 
-            var x = _ram.ReadByte(Memory.OamStart + i);
-            var y = _ram.ReadByte(Memory.OamStart + i + 1);
-            var attr = _ram.ReadByte(Memory.OamStart + i + 3);
+            var (targX, targY, targId, targAttr, targType) = _oam.ReadEntry(i);
 
-            if (x == 0xFF && y == 0xFF && sprId == 0xFF && attr == 0xFF)
-                continue; // don't check blank oam slot
+            if (
+                (targAttr & (ushort)SpriteFlags.Background) != 0
+                || (targAttr & (ushort)SpriteFlags.Hud) != 0
+            )
+                continue;
 
-            if (Math.Abs(xSrc - x) >= 8 || Math.Abs(ySrc - y) >= 8)
-                continue; // sprites can't touch
-
-            return (ushort)i;
+            // if this seems unintuitive, it's because it's actual math. Don't worry about it.
+            if (x < targX + 8 && x + 8 > targX && y < targY + 8 && y + 8 > targY)
+            {
+                return (ushort)i;
+            }
         }
-
-        return 0xFFFF;
+        return 0xFFFF; // no collision
     }
 
     public void PushDebug(string message)
@@ -307,6 +307,25 @@ internal class Motherboard : IMotherboard
         Apu?.FillBufferRange(audioBuffer, sampleAmount);
 
     public void ToggleSequencer() => _sequencer.Enabled = !_sequencer.Enabled;
+
+    public int GetOamCursor() => _oam.Cursor;
+
+    public void SetOamCursor(int value) => _oam.Cursor = value;
+
+    public void WriteSpriteEntry(ushort x, ushort y, byte tileId, byte attr, byte type) =>
+        _oam.WriteEntry(x, y, tileId, attr, type);
+
+    public void MoveCamera(int dx, int dy)
+    {
+        _ppu.CamX = (ushort)Math.Clamp((int)_ppu.CamX + dx, 0, ushort.MaxValue);
+        _ppu.CamY = (ushort)Math.Clamp((int)_ppu.CamY + dy, 0, ushort.MaxValue);
+    }
+
+    public void SetCamera(ushort x, ushort y)
+    {
+        _ppu.CamX = x;
+        _ppu.CamY = y;
+    }
 
     public void Step()
     {
