@@ -18,7 +18,7 @@
 
 .DEF CART_OK 1
 
-.DEF BIOS_VERSION 0x0001 ; Current BIOS Version: 0.1
+.DEF BIOS_VERSION 0x0002 ; Current BIOS Version: 0.1
 
 .DEF CoverLogo 8
 .DEF CopyrightSymbol 7
