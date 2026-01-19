@@ -217,7 +217,7 @@ internal class Apu
         return initial + correction;
     }
 
-    public void FillBuffer(float[] writeBuffer, int sampleCount = -1)
+    public void FillBufferRange(float[] writeBuffer, int sampleCount = -1)
     {
         const float preGain = 0.3f;
         if (sampleCount < 0)
