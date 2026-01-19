@@ -21,17 +21,17 @@
 .DEF CopyrightSymbol 7
 
 Reset:
-    LDI 0, YLW_DEF
-    SWC 0, 0
-    LDI 0, 0
-    ALT CLS 0
+    LDI r0, YLW_DEF
+    SWC r0, r0
+    LDI r0, 0
+    ALT CLS r0
 
     LDI r0, X
     LDI r1, Y
-    LDI r2, 0 ; Start at sprite 1
+    LDI r2, 0 ; Start at sprite 0
 
 DrawLogo:
-    DRAW r0, r1, r2, r3, r4
+    DRAW r0, r1, r2, r3
 
     IADD r0, 8
     INC r2 ; move on to the next sprite
@@ -43,30 +43,32 @@ DrawLogo:
     LDI 0, X
 
     InitCover: ; Just cover the letters initially
-        DRAW 0, 1, 2, 3, 4
+        DRAW r0, r1, r2, r3
 
         IADD r0, 8
 
-        ICMP r4, 13 ; DRAW puts the OAM slot you just drew in into the last register you pass in.
-                    ; This happens to always be 13 here, so we know that, if DRAW returns 13, we
-                    ; drew the last sprite.
+        GETOAM r4
+        ICMP r4, 14
 
+        LDI r12, 0
         JNE InitCover
 
 
 LowerCover:
-    LDI r4, 7 ; the first box is in OAM slot 7. The last is in OAM slot 13.
+    LDI r4, 8 ; the first box is in OAM slot 7. The last is in OAM slot 13.
+    SETOAM r4
+    CLS r12
     LDI r0, X ; reset X
     INC r1 ; Pull down by one pixel
 
     RedrawCover:
-        ALT DRAW r4, r0, r1, r2, r3 ; ALT DRAW alters the sprite at the oam slot in register 4
+        DRAW r0, r1, r2, r3
 
         IADD r0, 8
 
-        INC r4 ; Now we can compare OAM slots!
+        GETOAM r4 ; Now we can compare OAM slots!
 
-        ICMP r4, 14 ; Did we just alter the sprite at slot 13?
+        ICMP r4, 15 ; Did we just alter the sprite at slot 13?
         JNE RedrawCover
 
         LDI r15, 4
@@ -92,7 +94,7 @@ FlashBeep:
     IMUL r1, 8
     LDI r2, CopyrightSymbol
     LDI r3, 0
-    DRAW r0, r1, r2, r3, r4
+    DRAW r0, r1, r2, r3
     .STR 15, 31 "CHRISTOS MARAGKOS"
     VBLNK
 
