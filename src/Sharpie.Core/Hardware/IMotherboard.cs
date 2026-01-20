@@ -50,6 +50,9 @@ internal interface IMotherboard
     void WriteSpriteEntry(ushort x, ushort y, byte tileId, byte attr, byte type);
     (ushort X, ushort Y, byte TileId, byte Attr, byte Type) ReadSpriteEntry(int index);
 
+    ushort GetSequencerCursor();
+    void SetSequencerCursor(ushort value);
+
     void MoveCamera(int dx, int dy);
     void SetCamera(ushort x, ushort y);
 

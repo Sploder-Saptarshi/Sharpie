@@ -611,6 +611,18 @@ internal partial class Cpu
         _mobo.SetOamCursor(GetRegister(x)); // TODO: Make sure to throw a beautiful little segfault when we set to an index above the max
     }
 
+    private partial void Execute_GETSEQ(byte opcode, ref ushort pcDelta)
+    {
+        var rX = _mobo.ReadByte(_pc + 1);
+        GetRegister(rX) = _mobo.GetSequencerCursor();
+    }
+
+    private partial void Execute_SETSEQ(byte opcode, ref ushort pcDelta)
+    {
+        var rX = _mobo.ReadByte(_pc + 1);
+        _mobo.SetSequencerCursor(GetRegister(rX));
+    }
+
     private partial void Execute_COL(byte opcode, ref ushort pcDelta)
     {
         var (rSource, rDest) = ReadRegisterArgs();

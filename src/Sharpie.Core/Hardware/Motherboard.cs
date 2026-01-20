@@ -312,6 +312,10 @@ internal class Motherboard : IMotherboard
 
     public void SetOamCursor(int value) => _oam.Cursor = value;
 
+    public ushort GetSequencerCursor() => (ushort)_sequencer.Cursor;
+
+    public void SetSequencerCursor(ushort value) => _sequencer.Cursor = value;
+
     public void WriteSpriteEntry(ushort x, ushort y, byte tileId, byte attr, byte type) =>
         _oam.WriteEntry(x, y, tileId, attr, type);
 
