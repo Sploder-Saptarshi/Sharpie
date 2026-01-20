@@ -315,6 +315,9 @@ internal class Motherboard : IMotherboard
     public void WriteSpriteEntry(ushort x, ushort y, byte tileId, byte attr, byte type) =>
         _oam.WriteEntry(x, y, tileId, attr, type);
 
+    public (ushort X, ushort Y, byte TileId, byte Attr, byte Type) ReadSpriteEntry(int index) =>
+        _oam.ReadEntry(index);
+
     public void MoveCamera(int dx, int dy)
     {
         _ppu.CamX = (ushort)Math.Clamp((int)_ppu.CamX + dx, 0, ushort.MaxValue);

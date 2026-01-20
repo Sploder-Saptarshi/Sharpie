@@ -48,6 +48,7 @@ internal interface IMotherboard
     int GetOamCursor();
     void SetOamCursor(int value);
     void WriteSpriteEntry(ushort x, ushort y, byte tileId, byte attr, byte type);
+    (ushort X, ushort Y, byte TileId, byte Attr, byte Type) ReadSpriteEntry(int index);
 
     void MoveCamera(int dx, int dy);
     void SetCamera(ushort x, ushort y);

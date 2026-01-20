@@ -617,10 +617,21 @@ internal partial class Cpu
         GetRegister(rDest) = _mobo.CheckCollision(GetRegister(rSource));
     }
 
-    private partial void Execute_TAG(byte opcode, ref ushort pcDelta)
+    private partial void Execute_OAMPOS(byte opcode, ref ushort pcDelta)
+    {
+        var (rSource, rX) = ReadRegisterArgs();
+        var rY = _mobo.ReadByte(_pc + 1);
+
+        var entry = _mobo.ReadSpriteEntry(GetRegister(rSource));
+        (GetRegister(rY), GetRegister(rY)) = (entry.X, entry.Y);
+    }
+
+    private partial void Execute_OAMTAG(byte opcode, ref ushort pcDelta)
     {
         var (rSource, rDest) = ReadRegisterArgs();
-        GetRegister(rDest) = _tagMap[rSource];
+        var index = GetRegister(rSource);
+        var entry = _mobo.ReadSpriteEntry(index);
+        GetRegister(rDest) = (ushort)((entry.Type << 8) | entry.Attr);
     }
 
     private partial void Execute_SETCRS(byte opcode, ref ushort pcDelta)

@@ -203,6 +203,15 @@ internal partial class Cpu
                 break;
             }
 
+            case 0xF0: // OAMTAG
+            {
+                pcDelta = 2;
+                var (rSource, rDest) = ReadRegisterArgs();
+                var entry = _mobo.ReadSpriteEntry(GetRegister(rSource));
+                GetRegister(rDest) = entry.TileId;
+                break;
+            }
+
             case 0xF7: // TEXT
             {
                 pcDelta = 2;
