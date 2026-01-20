@@ -54,7 +54,7 @@
     
     { "hex": "0x80", "name": "RND",    "len": 3, "logic": null , "family": true , "words": 2 , "pattern": "RW", "desc": "Family. Random (0 to W-1) into Rn.", "alt": "" },
     { "hex": "0x90", "name": "FLIPR",  "len": 1, "logic": null , "words": 1 , "pattern": "", "desc": "Flips between using registers 0-15 and 16-31.", "alt": "" },
-    { "hex": "0x91", "name": "CAM",    "len": 2, "logic": null , "words": 3 , "pattern": "RR", "desc": "Relatively moves camera by the values in (rX,rY). The values in rX and rY are treated as signed.", "alt": "Sets the camera position to (rX,rY)" },
+    { "hex": "0x91", "name": "CAM",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Relatively moves camera by the values in (rX,rY). The values in rX and rY are treated as signed.", "alt": "Sets the camera position to (rX,rY)" },
     { "hex": "0x92", "name": "GETOAM", "len": 2, "logic": null , "words": 2 , "pattern": "R", "desc": "Copies the current value of the OAM cursor to rX.", "alt": "" },
     { "hex": "0x93", "name": "SETOAM", "len": 2, "logic": null , "words": 2 , "pattern": "R", "desc": "Sets the value of the OAM cursor to the value in rX", "alt": "" },
   
