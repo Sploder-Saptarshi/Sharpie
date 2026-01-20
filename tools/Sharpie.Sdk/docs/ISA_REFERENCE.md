@@ -52,14 +52,17 @@
 | `0x91` | **CAM** | `R, R` | 2 | Relatively moves camera by the values in (rX,rY). The values in rX and rY are treated as signed. | Sets the camera position to (rX,rY) |
 | `0x92` | **GETOAM** | `R` | 2 | Copies the current value of the OAM cursor to rX. |  |
 | `0x93` | **SETOAM** | `R` | 2 | Sets the value of the OAM cursor to the value in rX |  |
+| `0x94` | **GETSEQ** | `R` | 2 | Copies the current value of the Sequencer cursor to rX. |  |
+| `0x95` | **SETSEQ** | `R` | 2 | Sets the value of the Sequencer cursor to the value in rX. Does not start playing. |  |
 | `0xA0n` | **SONG** | `R` | 1 | Family. Start music from address in Rn. |  |
 | `0xC0` | **SETCRS** | `B, B` | 3 | Set text cursor to (X, Y). | Relative Move cursor by (X, Y). |
 | `0xD0n` | **DRAW** | `R, R, R, R` | 3 | Family. Draw sprite: X, Y, ID, Attr. & Type (Low byte -> attr, high byte -> type) |  |
 | `0xE0n` | **INSTR** | `R, B, B` | 3 | Family. Define ADSR for instrument Rn. |  |
-| `0xF0` | **TAG** | `R, R` | 2 | Read Attribute of OAM[R1] into R2. |  |
+| `0xC1` | **OAMPOS** | `R, R, R` | 3 | Set R2, R3 to the (X, Y) coordinates of the tile at OAM[R1] |  |
+| `0xF0` | **OAMTAG** | `R, R` | 2 | Pack Attribute and Type bytes of OAM[R1] into R2. Low Endian. | Set R2 to the Tile ID of OAM[R1] |
 | `0xF1` | **CLS** | `R` | 2 | Clear screen with color in R and invalidate OAM entries from the current OAM cursor position. | Hard Clear: Wipe screen and reset OAM. |
 | `0xF2` | **VBLNK** | `-` | 1 | Yield CPU until next V-Blank. |  |
-| `0xF3` | **PLAY** | `R, R, R` | 3 | Play note: Channel, Note, Instrument. |  |
+| `0xF3` | **PLAY** | `R, R, R` | 3 | Play note: Channel, Note, Instrument. Cannot be retriggered by the sequencer until the note is over. |  |
 | `0xF4` | **STOP** | `R` | 2 | Stop sound on channel in R. |  |
 | `0xF5` | **INPUT** | `R, R` | 2 | Read Controller [R1] into R2. |  |
 | `0xF7` | **TEXT** | `B` | 2 | Draw ASCII char B at cursor. | Print Register: Interpret B as register index and draw its value. |
