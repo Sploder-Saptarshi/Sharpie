@@ -18,6 +18,8 @@ internal class Apu
     private float[] _noiseValue = new float[8];
     private int[] _noiseTimer = new int[8];
 
+    private bool[] _notePriority = new bool[8];
+
     private static int SequencerCounter = 0;
 
     public Apu(IMotherboard mobo)
@@ -335,4 +337,8 @@ internal class Apu
     {
         _isEnabled = false;
     }
+
+    public void SetNotePriority(int channel, bool value) => _notePriority[channel] = value;
+
+    public bool IsCurrentNotePrioritized(int channel) => _notePriority[channel];
 }

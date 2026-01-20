@@ -17,7 +17,13 @@ internal interface IMotherboard
     void SetTextAttributes(byte attributes);
     void DrawChar(int x, int y, byte charCode);
 
-    void PlayNote(byte channel, byte note, byte instrument);
+    void PlayNote(
+        byte channel,
+        byte note,
+        byte instrument,
+        bool priority = false,
+        bool allowOverride = false
+    );
     void StopChannel(byte channel);
     void StopAllSounds();
     void StartSequencer(ushort address);

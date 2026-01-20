@@ -69,7 +69,7 @@
     { "hex": "0xF0", "name": "OAMTAG", "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Pack Attribute and Type bytes of OAM[R1] into R2. Low Endian.", "alt": "Set R2 to the Tile ID of OAM[R1]" },
     { "hex": "0xF1", "name": "CLS",    "len": 2, "logic": null , "words": 1 , "pattern": "R", "desc": "Clear screen with color in R and invalidate OAM entries from the current OAM cursor position.", "alt": "Hard Clear: Wipe screen and reset OAM." },
     { "hex": "0xF2", "name": "VBLNK",  "len": 1, "logic": null , "words": 0 , "pattern": "", "desc": "Yield CPU until next V-Blank.", "alt": "" },
-    { "hex": "0xF3", "name": "PLAY",   "len": 3, "logic": null , "words": 3 , "pattern": "RRR", "desc": "Play note: Channel, Note, Instrument.", "alt": "" },
+    { "hex": "0xF3", "name": "PLAY",   "len": 3, "logic": null , "words": 3 , "pattern": "RRR", "desc": "Play note: Channel, Note, Instrument. Cannot be retriggered by the sequencer until the note is over.", "alt": "" },
     { "hex": "0xF4", "name": "STOP",   "len": 2, "logic": null , "words": 1 , "pattern": "R", "desc": "Stop sound on channel in R.", "alt": "" },
     { "hex": "0xF5", "name": "INPUT",  "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Read Controller [R1] into R2.", "alt": "" },
     { "hex": "0xF7", "name": "TEXT",   "len": 2, "logic": null , "words": 1 , "pattern": "B", "desc": "Draw ASCII char B at cursor.", "alt": "Print Register: Interpret B as register index and draw its value." },

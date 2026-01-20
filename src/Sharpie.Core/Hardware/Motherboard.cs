@@ -221,18 +221,29 @@ internal class Motherboard : IMotherboard
         (ControllerStates[0], ControllerStates[1]) = (states.Item1, states.Item2);
     }
 
-    public void PlayNote(byte channel, byte note, byte instrument)
+    public void PlayNote(
+        byte channel,
+        byte note,
+        byte instrument,
+        bool priority = false,
+        bool allowOverride = false
+    )
     {
-        var freq = channel < 6 ? (440f * MathF.Pow(2f, (note - 69f) / 12f)) : note;
-        var baseAddr = Memory.AudioRamStart + (channel * 4);
+        if (!Apu!.IsCurrentNotePrioritized(channel) || allowOverride)
+        {
+            Apu.SetNotePriority(channel, priority);
 
-        var control = _ram.ReadByte(baseAddr + 3) & 1;
-        if (control == 1) // gate is on, retrigger the envelope
-            Apu?.RetriggerChannel(channel);
+            var freq = channel < 6 ? (440f * MathF.Pow(2f, (note - 69f) / 12f)) : note;
+            var baseAddr = Memory.AudioRamStart + (channel * 4);
 
-        _ram.WriteWord(baseAddr, (ushort)freq);
-        _ram.WriteByte(baseAddr + 2, 0xFF);
-        _ram.WriteByte(baseAddr + 3, (byte)((instrument << 1) | 1));
+            var control = _ram.ReadByte(baseAddr + 3) & 1;
+            if (control == 1) // gate is on, retrigger the envelope
+                Apu?.RetriggerChannel(channel);
+
+            _ram.WriteWord(baseAddr, (ushort)freq);
+            _ram.WriteByte(baseAddr + 2, 0xFF);
+            _ram.WriteByte(baseAddr + 3, (byte)((instrument << 1) | 1));
+        }
     }
 
     public void SetTextAttributes(byte attributes)
@@ -246,6 +257,7 @@ internal class Motherboard : IMotherboard
         var contolAddr = Memory.AudioRamStart + (channel * 4) + 3;
         var control = _ram.ReadByte(contolAddr);
         _ram.WriteByte(contolAddr, (byte)(control & (~0x01)));
+        Apu?.SetNotePriority(channel, false);
     }
 
     public void StopSystem()

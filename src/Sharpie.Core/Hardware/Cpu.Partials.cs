@@ -528,7 +528,7 @@ internal partial class Cpu
         var instrument = (byte)GetRegister(instrumentReg);
         if (channel > 7)
             channel = 7;
-        _mobo.PlayNote(channel, note, instrument);
+        _mobo.PlayNote(channel, note, instrument, true, true);
     }
 
     private partial void Execute_STOP(byte opcode, ref ushort pcDelta)
