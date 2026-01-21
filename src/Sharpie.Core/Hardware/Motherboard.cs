@@ -207,7 +207,7 @@ internal class Motherboard : IMotherboard
         for (int j = 0; j < 32; j++)
             TextGrid[i, j] = 0xFF;
         _ppu.BackgroundColorIndex = colorIndex;
-        _oam.Invalidate(_oam.Cursor * 6, 8191);
+        _oam.Invalidate(_oam.Cursor * 6, OamBank.Size - 1);
     }
 
     public void DrawChar(int x, int y, byte charCode)
