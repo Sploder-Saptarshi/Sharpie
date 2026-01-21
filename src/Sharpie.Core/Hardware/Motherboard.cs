@@ -18,7 +18,6 @@ internal class Motherboard : IMotherboard
     private byte[] _cartPalette = new byte[16];
 
     public byte FontColorIndex { get; private set; } = 1;
-    private byte _fontSizeReg = 0;
 
     public byte[] ControllerStates { get; } = new byte[2];
     public byte[,] TextGrid { get; } = new byte[32, 32];
@@ -249,7 +248,6 @@ internal class Motherboard : IMotherboard
     public void SetTextAttributes(byte attributes)
     {
         FontColorIndex = (byte)(attributes & 0x0F);
-        _fontSizeReg = (byte)((attributes >> 4) & 0x0F);
     }
 
     public void StopChannel(byte channel)
