@@ -203,6 +203,7 @@ internal class Motherboard : IMotherboard
         Apu?.LoadDefaultInstruments();
         Apu?.Enable();
         ResetOam();
+        ClearTextGrid();
         IsInBootMode = true;
         FontColorIndex = 1;
         _cpu.RequestReset();
@@ -247,11 +248,16 @@ internal class Motherboard : IMotherboard
 
     public void ClearScreen(byte colorIndex)
     {
+        ClearTextGrid();
+        _ppu.BackgroundColorIndex = colorIndex;
+        _oam.Invalidate(_oam.Cursor * 6, OamBank.Size - 1);
+    }
+
+    private void ClearTextGrid()
+    {
         for (int i = 0; i < 32; i++)
         for (int j = 0; j < 32; j++)
             TextGrid[i, j] = 0xFF;
-        _ppu.BackgroundColorIndex = colorIndex;
-        _oam.Invalidate(_oam.Cursor * 6, OamBank.Size - 1);
     }
 
     public void DrawChar(int x, int y, byte charCode)
