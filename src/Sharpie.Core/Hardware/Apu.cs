@@ -263,6 +263,17 @@ internal class Apu
         }
     }
 
+    private static void AdvanceSequencer()
+    {
+        var AdvanceRate = 1024 / Sequencer.TempoMultiplier;
+
+        if (++SequencerCounter >= AdvanceRate)
+        {
+            SequencerCounter -= AdvanceRate;
+            Sequencer.Instance?.Step();
+        }
+    }
+
     internal void ResetPhase(int channel)
     {
         if (channel >= 0 && channel < _phases.Length)
