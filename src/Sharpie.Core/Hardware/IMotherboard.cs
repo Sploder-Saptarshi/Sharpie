@@ -62,6 +62,8 @@ internal interface IMotherboard
     void MoveCamera(int dx, int dy);
     void SetCamera(ushort x, ushort y);
 
+    void TriggerSegfault(SegfaultType segfaultType);
+
     public static ReadOnlySpan<byte> SmallFont =>
         new byte[]
         {

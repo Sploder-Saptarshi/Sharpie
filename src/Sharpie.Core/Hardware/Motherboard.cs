@@ -27,12 +27,15 @@ internal class Motherboard : IMotherboard
     private readonly InputHandler _inputDevice;
     private readonly DebugOutput? _dbg;
 
+    private bool _isPoweringOn = true;
+
     private enum BiosFlagAddresses : ushort
     {
         MagicString = 0xFA20,
         Version = 0xFA24,
         CartVerificationState = 0xFA26,
         IsCartLoaded = 0xFA28,
+        ErrorCode = 0xFA29,
     }
 
     public Motherboard(
@@ -69,6 +72,7 @@ internal class Motherboard : IMotherboard
         SetupDisplay();
         SetupAudio();
         IsInBootMode = true;
+        _isPoweringOn = false;
     }
 
     private void ResetOam()
@@ -98,9 +102,18 @@ internal class Motherboard : IMotherboard
 
     public ushort ReadWord(int address) => ReadWord((ushort)address);
 
-    // TODO: Trigger a segfault when we write to the reserved space outside of boot mode
     public void WriteByte(ushort address, byte value)
     {
+        if (
+            address >= Memory.ReservedSpaceStart
+            && address <= Memory.ColorPaletteStart
+            && !IsInBootMode
+        )
+        {
+            TriggerSegfault(SegfaultType.ReservedRegionWrite);
+            return;
+        }
+
         _ram.WriteByte(address, value);
 
         if (address != (ushort)BiosFlagAddresses.CartVerificationState || !IsInBootMode)
@@ -116,6 +129,12 @@ internal class Motherboard : IMotherboard
 
     public void WriteWord(ushort address, ushort value)
     {
+        if (address >= Memory.ReservedSpaceStart)
+        {
+            TriggerSegfault(SegfaultType.ReservedRegionWrite);
+            return;
+        }
+
         _ram.WriteWord(address, value);
 
         if (address != (ushort)BiosFlagAddresses.CartVerificationState || !IsInBootMode)
@@ -161,6 +180,32 @@ internal class Motherboard : IMotherboard
         {
             _ram.WriteByte((ushort)BiosFlagAddresses.IsCartLoaded, 0xFF); // not a rom
         }
+    }
+
+    public void TriggerSegfault(SegfaultType segfaultType)
+    {
+        if (_isPoweringOn)
+            return;
+
+        PushDebug(segfaultType.GetMessage());
+        _ram.WriteByte((ushort)BiosFlagAddresses.ErrorCode, (byte)segfaultType);
+        ResetState();
+    }
+
+    private void ResetState()
+    {
+        _cpu.Halt();
+        _ram.ClearRange(0, Memory.SpriteAtlasStart);
+        _sequencer.Reset();
+        StopAllSounds();
+        Apu?.Disable();
+        Apu?.Reset();
+        Apu?.LoadDefaultInstruments();
+        Apu?.Enable();
+        ResetOam();
+        IsInBootMode = true;
+        FontColorIndex = 1;
+        _cpu.RequestReset();
     }
 
     private void BootIntoCartridge()
@@ -320,7 +365,15 @@ internal class Motherboard : IMotherboard
 
     public int GetOamCursor() => _oam.Cursor;
 
-    public void SetOamCursor(int value) => _oam.Cursor = value;
+    public void SetOamCursor(int value)
+    {
+        if (value >= OamBank.MaxEntries)
+        {
+            TriggerSegfault(SegfaultType.OamCursorOutOfBounds);
+            return;
+        }
+        _oam.Cursor = value;
+    }
 
     public ushort GetSequencerCursor() => (ushort)_sequencer.Cursor;
 

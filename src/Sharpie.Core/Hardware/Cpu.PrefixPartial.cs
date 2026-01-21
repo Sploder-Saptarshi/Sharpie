@@ -241,6 +241,12 @@ internal partial class Cpu
                 break;
             }
 
+            case 0xFF: // HALT
+            {
+                _mobo.TriggerSegfault(SegfaultType.ManualTrigger);
+                break;
+            }
+
             default:
                 _mobo.PushDebug($"Unknown ALT opcode: {prefixed}");
                 IsHalted = true;

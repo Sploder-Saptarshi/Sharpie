@@ -607,7 +607,7 @@ internal partial class Cpu
     private partial void Execute_SETOAM(byte opcode, ref ushort pcDelta)
     {
         var x = _mobo.ReadByte(_pc + 1);
-        _mobo.SetOamCursor(GetRegister(x)); // TODO: Make sure to throw a beautiful little segfault when we set to an index above the max
+        _mobo.SetOamCursor(GetRegister(x));
     }
 
     private partial void Execute_GETSEQ(byte opcode, ref ushort pcDelta)
