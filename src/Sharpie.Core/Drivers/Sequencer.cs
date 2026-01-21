@@ -9,6 +9,8 @@ internal class Sequencer
     private int _delayFrames = 0;
     public bool Enabled { get; set; } = false;
 
+    public static int TempoMultiplier { get; private set; } = 1;
+
     public Sequencer(IMotherboard mobo)
     {
         _mobo = mobo;
@@ -59,6 +61,12 @@ internal class Sequencer
             {
                 var stepsBack = (ushort)(duration | (instrument << 8));
                 Cursor -= 4 * stepsBack; // move the cursor 4 bytes back per step (since each packet is four bytes)
+                continue;
+            }
+            else if (channel == 0xFD) // TEMPO
+            {
+                TempoMultiplier = duration;
+                Cursor += 4;
                 continue;
             }
             else if (note == 0)
