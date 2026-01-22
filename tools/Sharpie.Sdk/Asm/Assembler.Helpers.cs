@@ -4,58 +4,34 @@ namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
 {
+    private readonly Dictionary<int, ScopeLevel> _scopeTree = new();
+
+    private ScopeLevel GetCurrentScope() => _scopeTree[CurrentScope!.Id];
+
     private bool TryDefineLabel(string name, ushort address) =>
-        CurrentScope.TryDefineLabel(name, address);
+        CurrentScope!.TryDefineLabel(name, address);
 
-    private bool TryResolveLabel(string name, out ushort address)
-    {
-        foreach (var scope in _scopes)
-            if (scope.LabelAddresses.TryGetValue(name, out address))
-                return true;
-
-        address = 0;
-        return false;
-    }
+    private bool TryResolveLabel(string name, out ushort address) =>
+        GetCurrentScope().TryResolveLabel(name, out address);
 
     private bool TryDefineConstant(string name, ushort value) =>
-        CurrentScope.TryDefineConstant(name, value);
+        CurrentScope!.TryDefineConstant(name, value);
 
-    private bool TryResolveConstant(string name, out ushort value)
-    {
-        foreach (var scope in _scopes)
-            if (scope.Constants.TryGetValue(name, out value))
-                return true;
+    private bool TryResolveConstant(string name, out ushort value) =>
+        GetCurrentScope().TryResolveConstant(name, out value);
 
-        value = 0;
-        return false;
-    }
-
-    private bool TryDefineEnum(string name) => CurrentScope.TryDefineEnum(name);
+    private bool TryDefineEnum(string name) => CurrentScope!.TryDefineEnum(name);
 
     private bool TryResolveEnum(string name)
     {
-        foreach (var scope in _scopes)
-            if (scope.Enums.TryGetValue(name, out _))
-                return true;
-
-        return false;
+        return GetCurrentScope().TryResolveEnum(name);
     }
 
     private bool TryDefineEnumMember(string enumName, string memberName, ushort value) =>
-        CurrentScope.TryDefineEnumMember(enumName, memberName, value);
+        CurrentScope!.TryDefineEnumMember(enumName, memberName, value);
 
-    private bool TryResolveEnumMember(string enumName, string memberName, out ushort value)
-    {
-        foreach (var scope in _scopes)
-            if (
-                scope.Enums.TryGetValue(enumName, out var members)
-                && members.TryGetValue(memberName, out value)
-            )
-                return true;
-
-        value = 0;
-        return false;
-    }
+    private bool TryResolveEnumMember(string enumName, string memberName, out ushort value) =>
+        GetCurrentScope().TryResolveEnumMember(enumName, memberName, out value);
 
     private int? ParseNumberLiteral(
         string input,

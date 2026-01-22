@@ -9,6 +9,14 @@ public partial class Assembler
     {
         Console.WriteLine("Assembler: Compiling file...");
         CurrentAddress = 0;
+
+        _scopes.Clear();
+        _scopeCounter = 0;
+        _scopes.Push(new ScopeLevel(null, _scopeCounter++)); // Reset scope tree
+
+        var scopeOpens = 0;
+        var scopeCloses = 0;
+
         int lineNum = 0;
         foreach (var token in Tokens)
         {
@@ -30,6 +38,16 @@ public partial class Assembler
             {
                 switch (token.Opcode.ToUpper())
                 {
+                    case ".SCOPE":
+                        scopeOpens++;
+                        _scopes.Push(_scopeTree[_scopeCounter++]);
+                        break;
+
+                    case ".ENDSCOPE":
+                        scopeCloses++;
+                        RemoveScope();
+                        break;
+
                     case ".ORG":
                         CurrentAddress = ParseWord(token.Args[0], lineNum);
                         break;
@@ -127,6 +145,10 @@ public partial class Assembler
                 }
             }
         }
+        if (scopeOpens != scopeCloses)
+            throw new AssemblySyntaxException(
+                "A .SCOPE directive was left without a matching .ENDSCOPE"
+            );
     }
 
     private void WriteToRom(byte value, int offset = 0)

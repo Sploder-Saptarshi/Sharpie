@@ -234,6 +234,7 @@ internal class Program
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
             Console.ResetColor();
         }
 

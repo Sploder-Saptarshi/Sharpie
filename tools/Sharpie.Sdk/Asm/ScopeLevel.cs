@@ -2,12 +2,17 @@ namespace Sharpie.Sdk.Asm;
 
 public class ScopeLevel
 {
+    public ScopeLevel? Parent { get; init; }
+    public int Id { get; init; }
+
     public Dictionary<string, ushort> LabelAddresses { get; }
     public Dictionary<string, ushort> Constants { get; }
     public Dictionary<string, Dictionary<string, ushort>> Enums { get; }
 
-    public ScopeLevel()
+    public ScopeLevel(ScopeLevel? parent, int id)
     {
+        Id = id;
+        Parent = parent;
         LabelAddresses = new();
         Constants = new();
         Enums = new();
@@ -39,4 +44,41 @@ public class ScopeLevel
 
     public bool IsEnumMemberDefined(string enumName, string memberName) =>
         Enums.TryGetValue(enumName, out var members) && members.ContainsKey(memberName);
+
+    public bool TryResolveLabel(string name, out ushort value)
+    {
+        if (LabelAddresses.TryGetValue(name, out value))
+            return true;
+        return Parent?.TryResolveLabel(name, out value) ?? false;
+    }
+
+    public bool TryResolveConstant(string name, out ushort value)
+    {
+        if (Constants.TryGetValue(name, out value))
+            return true;
+        return Parent?.TryResolveConstant(name, out value) ?? false;
+    }
+
+    public bool TryResolveEnum(string name)
+    {
+        if (Enums.TryGetValue(name, out _))
+            return true;
+        return Parent?.TryResolveEnum(name) ?? false;
+    }
+
+    public bool TryResolveEnumMember(string enumName, string memberName, out ushort value)
+    {
+        if (
+            Enums.TryGetValue(enumName, out var members)
+            && members.TryGetValue(memberName, out value)
+        )
+            return true;
+        value = 0;
+        return Parent?.TryResolveEnumMember(enumName, memberName, out value) ?? false;
+    }
+
+    public override string ToString()
+    {
+        return string.Join(' ', Constants.Keys);
+    }
 }

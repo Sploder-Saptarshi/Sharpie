@@ -19,8 +19,14 @@ public partial class Assembler
     private ushort _currentEnumVal;
 
     private readonly Stack<ScopeLevel> _scopes = new();
+    private int _scopeCounter = 0;
 
-    private void NewScope() => _scopes.Push(new ScopeLevel());
+    private void NewScope()
+    {
+        var scope = new ScopeLevel(CurrentScope, _scopeCounter++);
+        _scopes.Push(scope);
+        _scopeTree[scope.Id] = scope;
+    }
 
     private void RemoveScope()
     {
@@ -30,13 +36,11 @@ public partial class Assembler
         _scopes.Pop();
     }
 
-    private ScopeLevel CurrentScope => _scopes.Peek();
+    private ScopeLevel? CurrentScope => _scopes.Count > 0 ? _scopes.Peek() : null;
     private bool IsInLocalScope => _scopes.Count > 1;
 
     private void ReadFile()
     {
-        _scopes.Push(new ScopeLevel()); // global scope
-
         if (FileContents == null)
             throw new NullReferenceException("File contents are null. Check your file path.");
 
@@ -44,6 +48,8 @@ public partial class Assembler
 
         var lineNum = 0;
         string cleanLine;
+        NewScope(); // global scope
+
         foreach (var line in FileContents!)
         {
             var tokenLine = new TokenLine();
@@ -114,6 +120,15 @@ public partial class Assembler
         {
             NewScope();
             cleanLine = cleanLine.Substring(".SCOPE".Length).Trim(); // allow labels and such after scope start
+            Tokens.Add(
+                new TokenLine
+                {
+                    Opcode = ".SCOPE",
+                    SourceLine = lineNum,
+                    Address = CurrentAddress,
+                    Args = [],
+                }
+            );
         }
         else if (cleanLine.StartsWith(".ENDSCOPE"))
         {
@@ -125,6 +140,15 @@ public partial class Assembler
 
             RemoveScope();
             cleanLine = cleanLine.Substring(".ENDSCOPE".Length).Trim();
+            Tokens.Add(
+                new TokenLine
+                {
+                    Opcode = ".ENDSCOPE",
+                    SourceLine = lineNum,
+                    Address = CurrentAddress,
+                    Args = [],
+                }
+            );
         }
     }
 
