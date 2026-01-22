@@ -15,6 +15,8 @@
     CART_OK_ADDR = $FA26
     IS_CART_LOADED_ADDR = $FA28
     SYSTEM_STATUS = $FA29
+    SUBROUTINE_START = $FA2A
+    PLTE_START = $FFE0
 .ENDENUM
 
 .DEF CART_OK 1
@@ -366,40 +368,59 @@ Crash:
     .STR 1, 12 "Please restart"
     HALT
 
-; SYS_LUT
-; Loads an 8- or 16-bit value from an index within a lookup table (LUT) and
-; saves it to memory.
-; 
-LutAccess:
-    .SCOPE
-        .DEF FirstLutElementParameter $E800
-        .DEF IdxParameter $E802
-        .DEF StrideParameter $E804
-        .DEF OutputAddr $E805
+BIOSCalls:
 
-        LDM r0, FirstLutElementParameter ; The first address of the LUT
-        LDM r1, IdxParameter ; The index we're trying to access
-        LDM r2, StrideParameter ; The size of each LUT entry in bytes
+; SYS_MEM_IDX_READ(start, index, stride)
+; Loads a value from an index within a lookup table (LUT) and
+; saves it to memory. Also useful for structs, but you must manage the layout and padding carefully.
+;
+; Parameters:
+; $E800 - Start: The memory address of the first element of the LUT. 2 bytes.
+; $E802 - Index: The zero-based index of the element we want to retrieve. 2 bytes.
+; $E804 - Stride: The size of each element in the LUT in bytes. 1 byte.
+;
+; Function:
+; The CPU calculates (stride × index), adds it to the starting address,
+; and reads (stride) consecutive bytes starting from the resulting address.
+; Then, the results are saved to work RAM starting at $E805 and ending at $E805 + (stride - 1).
+;
+; Notes:
+; If stride is 1, an 8-bit write is performed, so only $E805 is overwritten.
+; If stride ≥ 2, (stride) consecutive bytes are written starting at $E805,
+; using 16-bit reads and writes.
+;
+; This subroutine overwrites these registers:
+; - R0
+; - R1
+; - R2
+; All other registers are preserved.
+.ORG $FA2A
+LutRead:
+.SCOPE
+    .DEF FirstLutElementParameter $E800
+    .DEF IdxParameter $E802
+    .DEF StrideParameter $E804
+    .DEF OutputAddr $E805
 
-        MUL r1, r2
-        ADD r0, r1
+    LDM r0, FirstLutElementParameter
+    LDM r1, IdxParameter
+    LDM r2, StrideParameter
 
-        ICMP r2, 1
-        JEQ Load8Bit
+    MUL r1, r2
+    ADD r0, r1
 
-        ICMP r2, 2
-        JEQ Load16Bit
+    ICMP r2, 1
+    JEQ Load8Bit
 
-        JMP Load16Bit ; Default to 16-bit width
+    JMP Load16Bit ; Default to 16-bit width
 
-        Load8Bit:
-            ALT LDP r1, r2 ; Load byte from [r2]
-            ALT STM r1, OutputAddr
-            RET
+    Load8Bit:
+        ALT LDP r1, r0 ; Load byte from [r2]
+        ALT STM r1, OutputAddr
+        RET
 
-        Load16Bit:
-            LDP r1, r2 ; Load word from [r2]
-            STM r1, OutputAddr
-            RET
-
-    .ENDSCOPE
+    Load16Bit:
+        LDP r1, r0 ; Load word from [r2]
+        STM r1, OutputAddr
+        RET
+.ENDSCOPE

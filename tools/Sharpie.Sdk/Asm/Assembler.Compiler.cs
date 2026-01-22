@@ -2,8 +2,15 @@ namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
 {
-    public readonly byte[] Rom = new byte[Meta.Constants.MaxRomSize];
-    private readonly bool[] TouchedBytes = new bool[Meta.Constants.MaxRomSize];
+    public readonly byte[] Rom = new byte[ushort.MaxValue];
+    private readonly bool[] TouchedBytes = new bool[ushort.MaxValue];
+
+    private readonly bool _firmwareMode = false;
+
+    public Assembler(bool firmwareMode)
+    {
+        _firmwareMode = firmwareMode;
+    }
 
     public void Compile()
     {
@@ -154,7 +161,7 @@ public partial class Assembler
     private void WriteToRom(byte value, int offset = 0)
     {
         var realAddr = CurrentAddress + offset;
-        if (realAddr >= Meta.Constants.MaxRomSize) // >= because MaxRomSize will throw as an index
+        if (realAddr >= Meta.Constants.MaxRomSize && !_firmwareMode) // >= because MaxRomSize will throw as an index
             throw new SharpieRomSizeException(CurrentAddress);
         if (TouchedBytes[realAddr])
             throw new SharpieRomSizeException(

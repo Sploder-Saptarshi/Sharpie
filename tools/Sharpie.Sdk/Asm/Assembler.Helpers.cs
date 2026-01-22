@@ -4,34 +4,69 @@ namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
 {
+    private static readonly Dictionary<string, ushort> BiosCallAddresses = new()
+    {
+        { "SYS_MEM_IDX_READ", 0xFA2A },
+    };
+
     private readonly Dictionary<int, ScopeLevel> _scopeTree = new();
 
     private ScopeLevel GetCurrentScope() => _scopeTree[CurrentScope!.Id];
 
-    private bool TryDefineLabel(string name, ushort address) =>
-        CurrentScope!.TryDefineLabel(name, address);
+    private bool TryDefineLabel(string name, ushort address, int lineNumber)
+    {
+        VerifyBiosPrefix(name, lineNumber);
+        return CurrentScope!.TryDefineLabel(name, address);
+    }
 
     private bool TryResolveLabel(string name, out ushort address) =>
         GetCurrentScope().TryResolveLabel(name, out address);
 
-    private bool TryDefineConstant(string name, ushort value) =>
-        CurrentScope!.TryDefineConstant(name, value);
+    private bool TryDefineConstant(string name, ushort value, int lineNumber)
+    {
+        VerifyBiosPrefix(name, lineNumber);
+        return CurrentScope!.TryDefineConstant(name, value);
+    }
 
     private bool TryResolveConstant(string name, out ushort value) =>
         GetCurrentScope().TryResolveConstant(name, out value);
 
-    private bool TryDefineEnum(string name) => CurrentScope!.TryDefineEnum(name);
-
-    private bool TryResolveEnum(string name)
+    private bool TryDefineEnum(string name, int lineNumber)
     {
-        return GetCurrentScope().TryResolveEnum(name);
+        VerifyBiosPrefix(name, lineNumber);
+        return CurrentScope!.TryDefineEnum(name);
     }
 
-    private bool TryDefineEnumMember(string enumName, string memberName, ushort value) =>
-        CurrentScope!.TryDefineEnumMember(enumName, memberName, value);
+    private bool TryResolveEnum(string name) => GetCurrentScope().TryResolveEnum(name);
+
+    private bool TryDefineEnumMember(
+        string enumName,
+        string memberName,
+        ushort value,
+        int lineNumber
+    )
+    {
+        VerifyBiosPrefix(memberName, lineNumber);
+        return CurrentScope!.TryDefineEnumMember(enumName, memberName, value);
+    }
 
     private bool TryResolveEnumMember(string enumName, string memberName, out ushort value) =>
         GetCurrentScope().TryResolveEnumMember(enumName, memberName, out value);
+
+    private static void VerifyBiosPrefix(string name, int lineNumber)
+    {
+        if (name.StartsWith("SYS_"))
+            throw new AssemblySyntaxException(
+                "The SYS_* prefix is reserved for BIOS calls - you cannot use it for constants, enums, enum members or labels.",
+                lineNumber
+            );
+    }
+
+    private void AddBiosLabels()
+    {
+        foreach (var kvp in BiosCallAddresses)
+            _scopes.Peek().TryDefineLabel(kvp.Key, kvp.Value);
+    }
 
     private int? ParseNumberLiteral(
         string input,

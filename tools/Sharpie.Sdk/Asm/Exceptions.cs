@@ -23,6 +23,6 @@ public class SharpieRomSizeException : Exception
 
     public SharpieRomSizeException(int lastAddr)
         : this(
-            $"Exceeded maximum Sharpie Rom size of 48 kilobytes by {lastAddr - 49152} bytes. Optimize your code."
+            $"Exceeded maximum Sharpie Rom size by {lastAddr - 49152} bytes. Optimize your code."
         ) { }
 }

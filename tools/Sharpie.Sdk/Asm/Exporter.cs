@@ -1,4 +1,5 @@
 using System.Text;
+using Sharpie.Sdk.Meta;
 
 namespace Sharpie.Sdk.Asm;
 
@@ -33,6 +34,7 @@ public class Exporter
 
         if (!asFirmware)
         {
+            romData = romData.Take(Constants.MaxRomSize).ToArray();
             writer.Write(Encoding.ASCII.GetBytes("SHRP"));
             writer.Write(PadText(_title, 24));
             writer.Write(PadText(_author, 14));

@@ -49,6 +49,7 @@ public partial class Assembler
         var lineNum = 0;
         string cleanLine;
         NewScope(); // global scope
+        AddBiosLabels();
 
         foreach (var line in FileContents!)
         {
@@ -175,7 +176,7 @@ public partial class Assembler
             if (
                 TryResolveLabel(name, out _)
                 || TryResolveConstant(name, out _)
-                || !TryDefineEnum(name)
+                || !TryDefineEnum(name, lineNum)
             )
                 throw new AssemblySyntaxException(
                     $"Enum named {parts[1]} is already declared.",
@@ -223,7 +224,7 @@ public partial class Assembler
                     );
                 }
 
-                if (!TryDefineEnumMember(_currentEnum, enumMember, _currentEnumVal++))
+                if (!TryDefineEnumMember(_currentEnum, enumMember, _currentEnumVal++, lineNum))
                     throw new AssemblySyntaxException(
                         $"Member {enumMember} already defined for enum {_currentEnum}",
                         lineNum
@@ -240,7 +241,7 @@ public partial class Assembler
 
                 var value = ParseWord(parts[1], lineNum);
 
-                if (!TryDefineEnumMember(_currentEnum, enumMember, value))
+                if (!TryDefineEnumMember(_currentEnum, enumMember, value, lineNum))
                     throw new AssemblySyntaxException(
                         $"Member {enumMember} already defined for enum {_currentEnum}",
                         lineNum
@@ -280,7 +281,7 @@ public partial class Assembler
 
         if (
             TryResolveLabel(name, out _)
-            || !TryDefineConstant(name, (ushort)value)
+            || !TryDefineConstant(name, (ushort)value, lineNumber)
             || TryResolveEnum(name)
         )
             throw new AssemblySyntaxException($"Constant {name} is already declared", lineNumber);
@@ -410,7 +411,7 @@ public partial class Assembler
         var label = labelRegex.Groups[1].Value;
 
         if (
-            !TryDefineLabel(label, (ushort)CurrentAddress)
+            !TryDefineLabel(label, (ushort)CurrentAddress, lineNumber)
             || TryResolveConstant(label, out _)
             || TryResolveEnum(label)
         )

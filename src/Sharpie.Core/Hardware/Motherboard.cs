@@ -159,8 +159,17 @@ internal class Motherboard : IMotherboard
 
     public void LoadBios(byte[] biosData)
     {
-        _biosRom.LoadData(0, biosData);
+        var biosCode = biosData.Take(Memory.SpriteAtlasStart).ToArray();
+        _biosRom.LoadData(0, biosCode);
         _ram.WriteByte((ushort)BiosFlagAddresses.IsCartLoaded, 0x00); // no cart loaded
+
+        if (biosData.Length < 0xFA2A)
+            return;
+
+        const int BiosCallStart = 0xFA2A;
+        var syscalls = biosData.Skip(BiosCallStart).ToArray();
+
+        _ram.LoadData(BiosCallStart, syscalls);
     }
 
     public void LoadCartridge(byte[] fileData)

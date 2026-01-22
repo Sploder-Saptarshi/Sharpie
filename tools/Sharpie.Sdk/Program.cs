@@ -273,7 +273,7 @@ internal class Program
         bool isFirmware = false
     )
     {
-        var asm = new Assembler();
+        var asm = new Assembler(isFirmware);
         asm.LoadFile(inputFilePath);
 
         var list = defaultPalette.ToList();

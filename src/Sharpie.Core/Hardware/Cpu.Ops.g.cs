@@ -369,7 +369,7 @@ internal partial class Cpu {
                 break;
 
             default:
-                Console.WriteLine($"Unknown Opcode: 0x{opcode:X2}");
+                Console.WriteLine($"Unknown Opcode @ {_pc:X4} : 0x{opcode:X2}");
                 IsHalted = true;
                 pcDelta = 1;
                 break;

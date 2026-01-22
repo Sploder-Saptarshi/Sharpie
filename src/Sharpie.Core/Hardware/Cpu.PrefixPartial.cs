@@ -256,7 +256,7 @@ internal partial class Cpu
             }
 
             default:
-                _mobo.PushDebug($"Unknown ALT opcode: {prefixed}");
+                _mobo.PushDebug($"Unknown ALT opcode @ {_pc:X2}: {prefixed}");
                 IsHalted = true;
                 pcDelta = 1;
                 break;
