@@ -44,8 +44,8 @@
 | `0x76` | **JLE** | `W` | 3 | Jump if Less or Equal. |  |
 | `0x77` | **CALL** | `W` | 3 | Push PC+3 to stack and jump to W. |  |
 | `0x78` | **RET** | `-` | 1 | Pop address from stack and jump back. |  |
-| `0x79` | **PUSH** | `R` | 2 | Push value in R onto call stack. |  |
-| `0x7A` | **POP** | `R` | 2 | Pop from call stack into R. |  |
+| `0x79` | **PUSH** | `R` | 2 | Push value in R onto stack. | Push the low byte of R onto the stack |
+| `0x7A` | **POP** | `R` | 2 | Pop from stack into R. | Pop single byte from stack into R |
 | `0x7B` | **OUT_R** | `R` | 2 | Log register R to debug console. |  |
 | `0x7C` | **OUT_B** | `B` | 2 | Log immediate byte B to debug console. |  |
 | `0x7D` | **OUT_W** | `W` | 3 | Log immediate word W to debug console. |  |

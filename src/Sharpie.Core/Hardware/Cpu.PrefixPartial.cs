@@ -220,6 +220,34 @@ internal partial class Cpu
                 break;
             }
 
+            case 0x79: // PUSH
+            {
+                if (_sp <= Memory.SpriteAtlasStart)
+                {
+                    _mobo.TriggerSegfault(SegfaultType.StackOverflow);
+                    return;
+                }
+                pcDelta = 2;
+                var x = _mobo.ReadByte(_pc + 1);
+                _sp--;
+                _mobo.WriteByte(_sp, (byte)GetRegister(x));
+                break;
+            }
+
+            case 0x7A: // POP
+            {
+                if (_sp >= Memory.AudioRamStart)
+                {
+                    _mobo.TriggerSegfault(SegfaultType.StackUnderflow);
+                    return;
+                }
+                pcDelta = 2;
+                var x = _mobo.ReadByte(_pc + 1);
+                GetRegister(x) = _mobo.ReadByte(_sp);
+                _sp++;
+                break;
+            }
+
             case 0xF0: // OAMTAG
             {
                 pcDelta = 2;
