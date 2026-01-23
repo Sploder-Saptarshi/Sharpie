@@ -2,8 +2,8 @@ namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
 {
-    public readonly byte[] Rom = new byte[ushort.MaxValue];
-    private readonly bool[] TouchedBytes = new bool[ushort.MaxValue];
+    public readonly byte[] Rom = new byte[ushort.MaxValue + 1];
+    private readonly bool[] TouchedBytes = new bool[ushort.MaxValue + 1];
 
     private readonly bool _firmwareMode = false;
 
