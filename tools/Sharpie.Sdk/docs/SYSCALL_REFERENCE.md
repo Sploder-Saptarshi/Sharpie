@@ -28,5 +28,6 @@ This subroutine overwrites these registers:
 - R0
 - R1
 - R2
+- R3
 All other registers are preserved.
 
