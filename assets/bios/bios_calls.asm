@@ -1,3 +1,4 @@
+.ORG $FA2A
 ; SYS_IDX_READ_VAL(start, index, stride)
 ;
 ; Origin: $FA2A
@@ -20,7 +21,6 @@
 ; - R2
 ; - R3
 ; All other registers are preserved.
-.ORG $FA2A
 LutRead:
 .SCOPE
     .DEF FirstLutElementParameter $E800
