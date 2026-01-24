@@ -187,7 +187,7 @@ LutWrite:
 ; saves it to memory. Similar to SYS_IDX_READ_VAL but with reference type semantics.
 ;
 ; The CPU calculates (stride × index) and adds it to the starting address of the LUT.
-; Then, the memory addressSCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) saved to work RAM, overwriting $E805-$E806
+; Then, the memory address is saved to work RAM, overwriting $E805-$E806
 ;
 ; Parameters:
 ; $E800 - Start: The memory address of the first element of the LUT. 2 bytes.
