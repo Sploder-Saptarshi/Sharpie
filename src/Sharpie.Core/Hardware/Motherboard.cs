@@ -318,7 +318,7 @@ internal class Motherboard : IMotherboard
 
     public void SetTextAttributes(byte attributes)
     {
-        FontColorIndex = (byte)(attributes & 0x0F);
+        FontColorIndex = (byte)(attributes & 0x1F);
     }
 
     public void StopChannel(byte channel)
@@ -433,7 +433,6 @@ internal class Motherboard : IMotherboard
         }
 
         VBlank();
-        _ppu.FlipBuffers();
         _cpu.IsAwaitingVBlank = false;
     }
 }

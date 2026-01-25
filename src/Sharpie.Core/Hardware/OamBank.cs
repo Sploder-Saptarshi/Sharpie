@@ -55,6 +55,9 @@ internal class OamBank
 
         /// Background toggle - ignore collision, bit 3
         Background = 8,
+
+        /// Alternate palette togle - offsets color by 16
+        AlternatePalette = 16,
     }
 
     private byte ReadByte(int address)

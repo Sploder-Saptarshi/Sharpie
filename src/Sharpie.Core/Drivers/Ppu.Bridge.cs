@@ -6,13 +6,9 @@ internal partial class Ppu
 
     public byte[] GetFrame()
     {
-        var displayBase = DisplayStart;
-        for (int i = 0; i <= ushort.MaxValue; i++)
+        for (int i = 0; i <= FrameSize - 1; i++)
         {
-            var vramByteOffset = i / 2;
-            var isHighNibble = (i & 1) == 0; // high nibble is always even pixel number
-            var packed = _vRam.ReadByte(displayBase + vramByteOffset);
-            var colorIndex = isHighNibble ? (byte)(packed >> 4) : (byte)(packed & 0xF);
+            var colorIndex = _vRam.ReadByte(i);
             var realIndex = _mobo.ReadByte(Memory.ColorPaletteStart + colorIndex);
             var color = IMotherboard.MasterPalette[realIndex];
 
@@ -20,7 +16,7 @@ internal partial class Ppu
             _framebuffer[bufferIndex] = color.R;
             _framebuffer[bufferIndex + 1] = color.G;
             _framebuffer[bufferIndex + 2] = color.B;
-            _framebuffer[bufferIndex + 3] = (byte)((realIndex == 0) ? 0 : 255);
+            _framebuffer[bufferIndex + 3] = (byte)((realIndex == 0 || realIndex == 16) ? 0 : 255); // Color 16 (aka color 0 in the alternate palette) is also always ignored
         }
         return _framebuffer;
     }
