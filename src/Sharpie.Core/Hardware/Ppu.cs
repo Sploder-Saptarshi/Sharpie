@@ -6,15 +6,12 @@ internal partial class Ppu
 {
     private const int DisplayHeight = 256;
     private const int DisplayWidth = 256;
+    private const int FrameSize = DisplayWidth * DisplayHeight;
+
     private const int WorldHeight = ushort.MaxValue;
     private const int WorldWidth = ushort.MaxValue;
 
     private const ushort SpriteMemoryStart = Memory.SpriteAtlasStart;
-
-    private int _currentBuffer = 0;
-
-    private ushort DisplayStart => (ushort)(_currentBuffer == 0 ? 0x0000 : 0x8000);
-    private ushort RenderStart => (ushort)(_currentBuffer == 0 ? 0x8000 : 0x0000);
 
     private readonly IMotherboard _mobo;
     private readonly Memory _vRam;
@@ -54,6 +51,7 @@ internal partial class Ppu
     {
         var flipH = (attributes & (byte)SpriteFlags.FlipH) != 0;
         var flipV = (attributes & (byte)SpriteFlags.FlipV) != 0;
+        var colorOffset = (attributes & (byte)SpriteFlags.AlternatePalette) != 0 ? 16 : 0;
 
         var spriteStartAddr = SpriteMemoryStart - (32 * (index + 1));
         for (int row = 0; row < 8; row++)
@@ -67,13 +65,11 @@ internal partial class Ppu
 
                 var realColumn1 = flipH ? (7 - column * 2) : (column * 2); // pemdas amirite
                 var realColumn2 = flipH ? (7 - (column * 2 + 1)) : (column * 2 + 1);
-                _spriteBuffer[realRow * 8 + realColumn1] = pixel1;
-                _spriteBuffer[realRow * 8 + realColumn2] = pixel2;
+                _spriteBuffer[realRow * 8 + realColumn1] = (byte)(pixel1 + colorOffset);
+                _spriteBuffer[realRow * 8 + realColumn2] = (byte)(pixel2 + colorOffset);
             }
         }
     }
-
-    public void FlipBuffers() => _currentBuffer = 1 - _currentBuffer;
 
     private void WritePixel(int x, int y, byte colorIndex)
     {
@@ -82,17 +78,9 @@ internal partial class Ppu
         if (colorIndex == 0)
             return;
 
-        var pixelIndex = y * 256 + x;
-        var byteOffset = pixelIndex / 2;
-        var isHighNibble = (pixelIndex & 1) == 0;
+        var pixelIndex = y * DisplayWidth + x;
 
-        var existingPixel = _vRam.ReadByte(RenderStart + byteOffset);
-        if (isHighNibble)
-            existingPixel = (byte)((existingPixel & 0x0F) | (colorIndex << 4));
-        else
-            existingPixel = (byte)((existingPixel & 0xF0) | (colorIndex & 0x0F));
-
-        _vRam.WriteByte(RenderStart + byteOffset, existingPixel);
+        _vRam.WriteByte(pixelIndex, colorIndex);
     }
 
     public void VBlank(OamBank oam)
@@ -216,27 +204,7 @@ internal partial class Ppu
 
     private void FillBuffer(byte colorIndex)
     {
-        Span<byte> vramSpan = _vRam.Slice(RenderStart, 32768);
-        vramSpan.Fill((byte)((colorIndex << 4) | colorIndex));
-    }
-
-    [Obsolete(
-        "Dumping VRAM into the console like this evidently is a performance nuke. Shocker, I know.",
-        true
-    )]
-    public void DumpVram(ushort start, int width, int height)
-    {
-        Console.WriteLine($"--- VRAM DUMP AT {start:X4} ---");
-        for (int y = 0; y < height; y++)
-        {
-            var line = $"{y:D2}: ";
-            for (int x = 0; x < width; x++)
-            {
-                byte val = _vRam.ReadByte(RenderStart + start + (y * 128) + x);
-                line += $"{val:X2} ";
-            }
-            Console.WriteLine(line);
-        }
-        Console.WriteLine("-----------------------------------");
+        Span<byte> vramSpan = _vRam.Slice(0, FrameSize);
+        vramSpan.Fill(colorIndex);
     }
 }

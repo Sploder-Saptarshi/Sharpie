@@ -163,7 +163,7 @@ internal partial class Cpu
 
     public void LoadDefaultPalette()
     {
-        for (byte i = 0; i < 16; i++)
+        for (byte i = 0; i < 31; i++)
         {
             _mobo.WriteByte(Memory.ColorPaletteStart + i, i);
         }
@@ -171,11 +171,11 @@ internal partial class Cpu
 
     public void LoadPalette(byte[] colorPalette)
     {
-        for (byte i = 0; i < 16; i++)
+        for (byte i = 0; i < 31; i++)
         {
             _mobo.WriteByte(
                 Memory.ColorPaletteStart + i,
-                colorPalette[i] > 0x1F ? i : colorPalette[i]
+                (colorPalette[i] > 0x1F || i >= colorPalette.Length) ? i : colorPalette[i]
             );
         }
     }

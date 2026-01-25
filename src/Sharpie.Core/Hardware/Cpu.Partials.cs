@@ -613,7 +613,7 @@ internal partial class Cpu
     private partial void Execute_SWC(byte opcode, ref ushort pcDelta)
     {
         var (oldIndex, newIndex) = ReadRegisterArgs();
-        _mobo.SwapColor((byte)(GetRegister(oldIndex) & 0x0F), (byte)(GetRegister(newIndex) & 0x1F));
+        _mobo.SwapColor((byte)(GetRegister(oldIndex) & 0x1F), (byte)(GetRegister(newIndex) & 0x1F));
     }
 
     private partial void Execute_SONG(byte opcode, ref ushort pcDelta)
