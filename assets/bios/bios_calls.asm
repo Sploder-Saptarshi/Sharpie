@@ -119,8 +119,7 @@ FrameDelay:
     Loop:
         VBLNK
         DEC r15
-        ICMP r15, 0
-        JNE Loop ; No need to ICMP since DEC updates flags with right operand 1
+        JGE Loop ; No need to ICMP since DEC updates flags with right operand 1
 
     RET
 .ENDSCOPE
