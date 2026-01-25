@@ -468,7 +468,7 @@ internal partial class Cpu
         var negative = IsFlagOn(CpuFlags.Negative);
         var overflow = IsFlagOn(CpuFlags.Overflow);
 
-        if (zero && negative != overflow)
+        if (zero || negative != overflow)
         {
             _pc = target;
             pcDelta = 0;
