@@ -46,7 +46,7 @@
     { "hex": "0x74", "name": "JLT",    "len": 3, "logic": null , "words": 1 , "pattern": "W", "desc": "Jump if Less Than.", "alt": "" },
     { "hex": "0x75", "name": "JGE",    "len": 3, "logic": null , "words": 1 , "pattern": "W", "desc": "Jump if Greater or Equal.", "alt": "" },
     { "hex": "0x76", "name": "JLE",    "len": 3, "logic": null , "words": 1 , "pattern": "W", "desc": "Jump if Less or Equal.", "alt": "" },
-    { "hex": "0x77", "name": "CALL",   "len": 3, "logic": null , "words": 1 , "pattern": "W", "desc": "Push PC+3 to stack and jump to W.", "alt": "" },
+    { "hex": "0x77", "name": "CALL",   "len": 3, "logic": null , "words": 1 , "pattern": "W", "desc": "Push PC+3 to stack and jump to W.", "alt": "Push PC+3 to stack and jump to the address contained in R1." },
     { "hex": "0x78", "name": "RET",    "len": 1, "logic": null , "words": 0 , "pattern": "", "desc": "Pop address from stack and jump back.", "alt": "" },
     { "hex": "0x79", "name": "PUSH",   "len": 2, "logic": null , "words": 1 , "pattern": "R", "desc": "Push value in R onto stack.", "alt": "Push the low byte of R onto the stack" },
     { "hex": "0x7A", "name": "POP",    "len": 2, "logic": null , "words": 1 , "pattern": "R", "desc": "Pop from stack into R.", "alt": "Pop single byte from stack into R" },

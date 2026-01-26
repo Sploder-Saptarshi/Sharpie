@@ -42,7 +42,7 @@
 | `0x74` | **JLT** | `W` | 3 | Jump if Less Than. |  |
 | `0x75` | **JGE** | `W` | 3 | Jump if Greater or Equal. |  |
 | `0x76` | **JLE** | `W` | 3 | Jump if Less or Equal. |  |
-| `0x77` | **CALL** | `W` | 3 | Push PC+3 to stack and jump to W. |  |
+| `0x77` | **CALL** | `W` | 3 | Push PC+3 to stack and jump to W. | Push PC+3 to stack and jump to the address contained in R1. |
 | `0x78` | **RET** | `-` | 1 | Pop address from stack and jump back. |  |
 | `0x79` | **PUSH** | `R` | 2 | Push value in R onto stack. | Push the low byte of R onto the stack |
 | `0x7A` | **POP** | `R` | 2 | Pop from stack into R. | Pop single byte from stack into R |
