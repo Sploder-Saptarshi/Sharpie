@@ -1,5 +1,4 @@
 using System.Text;
-using Sharpie.Sdk.Meta;
 
 namespace Sharpie.Sdk.Asm;
 
@@ -34,7 +33,6 @@ public class Exporter
 
         if (!asFirmware)
         {
-            romData = romData.Take(Constants.MaxRomSize).ToArray();
             writer.Write(Encoding.ASCII.GetBytes("SHRP"));
             writer.Write(PadText(_title, 24));
             writer.Write(PadText(_author, 14));
@@ -42,8 +40,8 @@ public class Exporter
             writer.Write(_biosVersion);
             writer.Write(CalculateChecksum(romData));
 
-            var bytePalette = new byte[16];
-            for (int i = 0; i < 16; i++)
+            var bytePalette = new byte[32];
+            for (int i = 0; i < 32; i++)
                 bytePalette[i] = (byte)_palette[i];
             writer.Write(bytePalette);
         }
