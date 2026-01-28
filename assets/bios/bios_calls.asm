@@ -28,9 +28,12 @@ LutRead:
     .DEF StrideParameter $E804
     .DEF OutputAddr $E805
 
+    LDM r2, StrideParameter
+    ICMP r2, 0
+    JEQ Return
+
     LDM r0, FirstLutElementParameter
     LDM r1, IdxParameter
-    LDM r2, StrideParameter
 
     MUL r1, r2
     ADD r0, r1
@@ -49,6 +52,7 @@ LutRead:
         ICMP r2, 0
         JGT Loop
 
+    Return:
         RET
 .ENDSCOPE
 
@@ -78,8 +82,11 @@ Stackalloc:
     .DEF StartAddressParam $E800
     .DEF ByteAmountParam $E802
 
-    LDM r0, StartAddressParam
     ALT LDM r1, ByteAmountParam
+    ICMP r1, 0
+    JEQ Return
+
+    LDM r0, StartAddressParam
 
     MOV r2, r0
     ADD r0, r1
@@ -96,6 +103,7 @@ Stackalloc:
         JGE Loop
 
     PUSH r3
+Return:
     RET
 .ENDSCOPE
 
