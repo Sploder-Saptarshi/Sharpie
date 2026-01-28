@@ -57,6 +57,7 @@ public interface IRomBuffer
     {
         if (Scopes.Count <= 2)
             throw new AssemblySyntaxException($"Cannot exit global scope of region {Name}");
+        Scopes.Pop();
     }
 
     public ScopeLevel CurrentScope => Scopes.Peek();
