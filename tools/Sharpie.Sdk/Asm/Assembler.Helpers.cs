@@ -14,12 +14,15 @@ public partial class Assembler
         { "SYS_IDX_READ_REF", 0xFAA6 },
     };
 
-    private ScopeLevel GetCurrentScope() => CurrentRegion.ScopeById;
+    private ScopeLevel GetCurrentScope() =>
+        CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
 
     private bool TryDefineLabel(string name, ushort address, int lineNumber)
     {
         VerifyBiosPrefix(name, lineNumber);
-        return CurrentRegion.CurrentScope!.TryDefineLabel(name, address);
+        var currentScope =
+            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+        return currentScope.TryDefineLabel(name, address);
     }
 
     private bool TryResolveLabel(string name, out ushort address) =>
@@ -28,7 +31,9 @@ public partial class Assembler
     private bool TryDefineConstant(string name, ushort value, int lineNumber)
     {
         VerifyBiosPrefix(name, lineNumber);
-        return CurrentRegion.CurrentScope!.TryDefineConstant(name, value);
+        var currentScope =
+            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+        return currentScope.TryDefineConstant(name, value);
     }
 
     private bool TryResolveConstant(string name, out ushort value) =>
@@ -37,7 +42,9 @@ public partial class Assembler
     private bool TryDefineEnum(string name, int lineNumber)
     {
         VerifyBiosPrefix(name, lineNumber);
-        return CurrentRegion.CurrentScope!.TryDefineEnum(name);
+        var currentScope =
+            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+        return currentScope.TryDefineEnum(name);
     }
 
     private bool TryResolveEnum(string name) => GetCurrentScope().TryResolveEnum(name);
@@ -50,7 +57,9 @@ public partial class Assembler
     )
     {
         VerifyBiosPrefix(memberName, lineNumber);
-        return CurrentRegion.CurrentScope!.TryDefineEnumMember(enumName, memberName, value);
+        var currentScope =
+            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+        return currentScope.TryDefineEnumMember(enumName, memberName, value);
     }
 
     private bool TryResolveEnumMember(string enumName, string memberName, out ushort value) =>
@@ -137,7 +146,10 @@ public partial class Assembler
         {
             int result = Convert.ToInt32(cleanArg, style);
             if (result > limit)
-                return null;
+                throw new AssemblySyntaxException(
+                    $"Numeric literal '{result}' is over the allowed limit of {limit}",
+                    lineNumber
+                );
 
             return !negative ? result : -result;
         }

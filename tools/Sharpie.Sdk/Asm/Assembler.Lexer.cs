@@ -1,43 +1,57 @@
 using System.Text.RegularExpressions;
+using Sharpie.Sdk.Asm.Structuring;
 
 namespace Sharpie.Sdk.Asm;
 
 public partial class Assembler
 {
-    private int CurrentAddress = 0;
     private static readonly char[] CommonDelimiters = [',', ' '];
 
     private IEnumerable<string>? FileContents { get; set; }
-    public List<TokenLine> Tokens { get; } = new();
-
-    private bool _isInAssetMode;
-    private int _realCursor;
 
     private static readonly char[] DisallowedEnumChars = [':', ',', '#', '=', ' ', '\'', '"'];
+    private static readonly List<TokenLine> FirmwareModeTokens = new();
+
+    private void AddToken(TokenLine token)
+    {
+        if (_firmwareMode)
+        {
+            FirmwareModeTokens.Add(token);
+            return;
+        }
+
+        if (CurrentRegion == null)
+            throw new AssemblySyntaxException(
+                $"Only enum, label and constant definitions are allowed outside of regions.",
+                token.SourceLine!.Value
+            );
+
+        CurrentRegion.Tokens.Add(token);
+    }
 
     private string? _currentEnum = null;
     private ushort _currentEnumVal;
 
-    private readonly Stack<ScopeLevel> _scopes = new();
-    private int _scopeCounter = 0;
+    private IRomBuffer? CurrentRegion = null;
+    private readonly Dictionary<string, IRomBuffer> AllRegions = new();
 
     private void NewScope()
     {
-        var scope = new ScopeLevel(CurrentScope, _scopeCounter++);
-        _scopes.Push(scope);
-        _scopeTree[scope.Id] = scope;
+        if (CurrentRegion == null && !_firmwareMode)
+            throw new AssemblySyntaxException("Cannot enter local scope outside of a region.");
+        CurrentRegion!.NewScope(CurrentRegion.CurrentScope);
     }
 
-    private void RemoveScope()
+    private void ExitScope()
     {
-        if (!IsInLocalScope)
-            throw new InvalidOperationException("Cannot remove global scope.");
-
-        _scopes.Pop();
+        if (CurrentRegion == null)
+            throw new AssemblySyntaxException("Cannot exit local scope outside of a region.");
+        CurrentRegion!.ExitScope();
     }
 
-    private ScopeLevel? CurrentScope => _scopes.Count > 0 ? _scopes.Peek() : null;
-    private bool IsInLocalScope => _scopes.Count > 1;
+    private ScopeLevel? CurrentScope =>
+        CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+    private bool IsInLocalScope => CurrentRegion == null ? false : CurrentRegion.Scopes.Count > 2;
 
     private void ReadFile()
     {
@@ -48,7 +62,6 @@ public partial class Assembler
 
         var lineNum = 0;
         string cleanLine;
-        NewScope(); // global scope
         AddBiosLabels();
 
         foreach (var line in FileContents!)
@@ -75,11 +88,9 @@ public partial class Assembler
                 || cleanLine.StartsWith(".BYTES")
                 || cleanLine.StartsWith(".DW");
 
-            if (_isInAssetMode && !isAssetDirective)
-            {
-                CurrentAddress = _realCursor;
-                _isInAssetMode = false;
-            }
+            ParseRegion(ref cleanLine, lineNum);
+            if (IsLineEmpty(cleanLine))
+                continue;
 
             ParseScope(ref cleanLine, lineNum);
             if (IsLineEmpty(cleanLine))
@@ -106,7 +117,7 @@ public partial class Assembler
             if (tokenLine.ArePropertiesNull())
                 continue;
             if (tokenLine.Opcode != "ALT")
-                Tokens.Add(tokenLine); // ALT is added right when tokenizing
+                AddToken(tokenLine); // ALT is added right when tokenizing
         }
 
         Compile();
@@ -115,13 +126,68 @@ public partial class Assembler
         bool IsLineEmpty(string line) => string.IsNullOrWhiteSpace(line);
     }
 
+    private void ParseRegion(ref string cleanLine, int lineNum)
+    {
+        if (cleanLine.StartsWith(".REGION"))
+        {
+            if (CurrentRegion != null)
+                throw new AssemblySyntaxException($"Cannot create nested regions.", lineNum);
+
+            var parts = cleanLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2)
+                throw new AssemblySyntaxException(
+                    "Directive .REGION expected a region name. Try: 'FIXED', 'BANK_0', 'SPRITE_ATLAS'",
+                    lineNum
+                );
+
+            if (parts.Length > 2)
+                throw new AssemblySyntaxException($"Unexpected token: {parts.Last()}", lineNum);
+
+            var regionName = parts[1];
+            SwitchCurrentRegion(regionName, lineNum);
+        }
+        else if (cleanLine.StartsWith(".ENDREGION"))
+        {
+            if (CurrentRegion == null)
+                throw new AssemblySyntaxException(
+                    "Directive .ENDREGION could not find an opening .REGION",
+                    lineNum
+                );
+
+            CurrentRegion = null;
+        }
+    }
+
+    private void SwitchCurrentRegion(string regionName, int lineNum)
+    {
+        int? bankId;
+        if (regionName.StartsWith("BANK"))
+        {
+            var parts = regionName.Split("_");
+            if (parts.Length != 2)
+                throw new AssemblySyntaxException($"Unexpected token: {parts.Last()}", lineNum);
+
+            regionName = parts[0]; // "BANK"
+            bankId = ParseNumberLiteral(parts[1], false, lineNum, 255);
+        }
+        switch (regionName)
+        {
+            case "FIXED":
+                CurrentRegion = new FixedRegionBuffer();
+                break;
+            case "BANK":
+                CurrentRegion = new BankBuffer();
+                break;
+        }
+    }
+
     private void ParseScope(ref string cleanLine, int lineNum)
     {
         if (cleanLine.StartsWith(".SCOPE"))
         {
             NewScope();
             cleanLine = cleanLine.Substring(".SCOPE".Length).Trim(); // allow labels and such after scope start
-            Tokens.Add(
+            CurrentRegion!.AddToken(
                 new TokenLine
                 {
                     Opcode = ".SCOPE",
@@ -139,9 +205,9 @@ public partial class Assembler
                     lineNum
                 );
 
-            RemoveScope();
+            ExitScope();
             cleanLine = cleanLine.Substring(".ENDSCOPE".Length).Trim();
-            Tokens.Add(
+            AddToken(
                 new TokenLine
                 {
                     Opcode = ".ENDSCOPE",
@@ -321,7 +387,7 @@ public partial class Assembler
         for (int i = 0; i < coordArgs.Length; i++)
             coordArgs[i] = coordArgs[i].Trim(CommonDelimiters);
 
-        Tokens.Add(
+        AddToken(
             new TokenLine
             {
                 Opcode = "SETCRS",
@@ -342,7 +408,7 @@ public partial class Assembler
                 SourceLine = lineNumber,
                 Address = CurrentAddress,
             };
-            Tokens.Add(tl);
+            AddToken(tl);
             CurrentAddress += delta;
         }
 
@@ -353,7 +419,7 @@ public partial class Assembler
         {
             var cleanArg = arg.Trim(CommonDelimiters).Trim();
             var value = ParseRegister(cleanArg, lineNumber);
-            Tokens.Add(
+            AddToken(
                 new()
                 {
                     Opcode = "ALT",
@@ -364,7 +430,7 @@ public partial class Assembler
             );
             CurrentAddress += InstructionSet.GetOpcodeLength("ALT");
 
-            Tokens.Add(
+            AddToken(
                 new()
                 {
                     Opcode = "TEXT",
@@ -506,7 +572,7 @@ public partial class Assembler
 
         if (args[0] == "ALT" && args.Length > 1)
         {
-            Tokens.Add(
+            AddToken(
                 new TokenLine
                 {
                     Opcode = "ALT",
@@ -525,7 +591,7 @@ public partial class Assembler
                 // Args = args.Skip(1).ToArray(),
             };
             Tokenize(remainingLine, ref nextToken, lineNumber);
-            Tokens.Add(nextToken);
+            AddToken(nextToken);
             return;
         }
 

@@ -6,7 +6,7 @@ public interface IRomBuffer
     ushort Cursor { get; }
     byte[] ByteBuffer { get; }
     bool[] TouchedBytes { get; }
-    bool IsReadOnly { get; }
+    bool IsReadOnly { get; set; }
     List<TokenLine> Tokens { get; init; }
     Stack<ScopeLevel> Scopes { get; init; }
     Dictionary<int, ScopeLevel> AllScopes { get; init; }
@@ -16,7 +16,6 @@ public interface IRomBuffer
 
     public static readonly ScopeLevel GlobalScope = new(null, 0);
 
-    void MakeReadOnly();
     void AdvanceCursor();
     public void WriteByte(byte value)
     {
@@ -45,9 +44,9 @@ public interface IRomBuffer
         WriteByte(high);
     }
 
-    public void NewScope(ScopeLevel? parent)
+    public void NewScope()
     {
-        var scope = new ScopeLevel(parent, ScopeCounter);
+        var scope = new ScopeLevel(CurrentScope, ScopeCounter);
         Scopes.Push(scope);
         AllScopes[ScopeCounter] = scope;
         ScopeCounter++;
@@ -70,7 +69,7 @@ public class FixedRegionBuffer : IRomBuffer
     public ushort Cursor { get; private set; }
     public byte[] ByteBuffer { get; }
     public bool[] TouchedBytes { get; }
-    public bool IsReadOnly { get; private set; }
+    public bool IsReadOnly { get; set; }
     public string Name { get; init; } = "Fixed Region";
     public List<TokenLine> Tokens { get; init; } = new();
     public Stack<ScopeLevel> Scopes { get; init; } = new();
@@ -83,12 +82,7 @@ public class FixedRegionBuffer : IRomBuffer
         TouchedBytes = new bool[Size];
         IsReadOnly = false;
         Scopes.Push(IRomBuffer.GlobalScope);
-        (this as IRomBuffer).NewScope(null);
-    }
-
-    public void MakeReadOnly()
-    {
-        IsReadOnly = true;
+        (this as IRomBuffer).NewScope();
     }
 
     public void AdvanceCursor()
@@ -103,7 +97,7 @@ public class BankBuffer : IRomBuffer
     public ushort Cursor { get; private set; }
     public byte[] ByteBuffer { get; }
     public bool[] TouchedBytes { get; }
-    public bool IsReadOnly { get; private set; }
+    public bool IsReadOnly { get; set; }
     public static int TotalBanksCreated = 0;
     public string Name { get; init; }
     public List<TokenLine> Tokens { get; init; } = new();
@@ -119,12 +113,7 @@ public class BankBuffer : IRomBuffer
         Name = $"Bank {TotalBanksCreated}";
         TotalBanksCreated++;
         Scopes.Push(IRomBuffer.GlobalScope);
-        (this as IRomBuffer).NewScope(null);
-    }
-
-    public void MakeReadOnly()
-    {
-        IsReadOnly = true;
+        (this as IRomBuffer).NewScope();
     }
 
     public void AdvanceCursor()
@@ -152,12 +141,7 @@ public class SpriteAtlasBuffer : IRomBuffer
         TouchedBytes = new bool[Size];
         IsReadOnly = false;
         Scopes.Push(IRomBuffer.GlobalScope);
-        (this as IRomBuffer).NewScope(null);
-    }
-
-    public void MakeReadOnly()
-    {
-        IsReadOnly = true;
+        (this as IRomBuffer).NewScope();
     }
 
     public void AdvanceCursor()

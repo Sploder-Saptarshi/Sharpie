@@ -52,7 +52,7 @@ public partial class Assembler
 
                     case ".ENDSCOPE":
                         scopeCloses++;
-                        RemoveScope();
+                        ExitScope();
                         break;
 
                     case ".ORG":
