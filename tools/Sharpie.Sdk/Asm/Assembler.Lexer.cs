@@ -25,6 +25,7 @@ public partial class Assembler
 
     private string? _currentEnum = null;
     private ushort _currentEnumVal;
+    private bool _globalMode;
 
     private IRomBuffer? CurrentRegion = null;
     private readonly Dictionary<string, IRomBuffer> AllRegions = new();
@@ -79,6 +80,10 @@ public partial class Assembler
                 continue;
             }
 
+            ParseGlobal(ref cleanLine, lineNum);
+            if (IsLineEmpty(cleanLine))
+                continue;
+
             ParseRegion(ref cleanLine, lineNum);
             if (IsLineEmpty(cleanLine))
                 continue;
@@ -114,6 +119,20 @@ public partial class Assembler
         return Compile();
 
         bool IsLineEmpty(string line) => string.IsNullOrWhiteSpace(line);
+    }
+
+    private void ParseGlobal(ref string cleanLine, int lineNum)
+    {
+        if (cleanLine.StartsWith(".GLOBAL"))
+        {
+            _globalMode = true;
+            cleanLine = cleanLine.Substring(".GLOBAL".Length).Trim();
+        }
+        else if (cleanLine.StartsWith(".ENDGLOBAL"))
+        {
+            _globalMode = false;
+            cleanLine = cleanLine.Substring(".ENDGLOBAL".Length).Trim();
+        }
     }
 
     private void ParseRegion(ref string cleanLine, int lineNum)
@@ -264,7 +283,7 @@ public partial class Assembler
             if (
                 TryResolveLabel(name, out _)
                 || TryResolveConstant(name, out _)
-                || !TryDefineEnum(name, lineNum)
+                || !TryDefineEnum(name, lineNum, _globalMode)
             )
                 throw new AssemblySyntaxException(
                     $"Enum named {parts[1]} is already declared.",
@@ -312,7 +331,15 @@ public partial class Assembler
                     );
                 }
 
-                if (!TryDefineEnumMember(_currentEnum, enumMember, _currentEnumVal++, lineNum))
+                if (
+                    !TryDefineEnumMember(
+                        _currentEnum,
+                        enumMember,
+                        _currentEnumVal++,
+                        lineNum,
+                        _globalMode
+                    )
+                )
                     throw new AssemblySyntaxException(
                         $"Member {enumMember} already defined for enum {_currentEnum}",
                         lineNum
@@ -329,7 +356,7 @@ public partial class Assembler
 
                 var value = ParseWord(parts[1], lineNum);
 
-                if (!TryDefineEnumMember(_currentEnum, enumMember, value, lineNum))
+                if (!TryDefineEnumMember(_currentEnum, enumMember, value, lineNum, _globalMode))
                     throw new AssemblySyntaxException(
                         $"Member {enumMember} already defined for enum {_currentEnum}",
                         lineNum
@@ -369,7 +396,7 @@ public partial class Assembler
 
         if (
             TryResolveLabel(name, out _)
-            || !TryDefineConstant(name, (ushort)value, lineNumber)
+            || !TryDefineConstant(name, (ushort)value, lineNumber, _globalMode)
             || TryResolveEnum(name)
         )
             throw new AssemblySyntaxException($"Constant {name} is already declared", lineNumber);
@@ -499,7 +526,7 @@ public partial class Assembler
         var label = labelRegex.Groups[1].Value;
 
         if (
-            !TryDefineLabel(label, (ushort)CurrentRegion!.Cursor, lineNumber)
+            !TryDefineLabel(label, (ushort)CurrentRegion!.Cursor, lineNumber, _globalMode)
             || TryResolveConstant(label, out _)
             || TryResolveEnum(label)
         )
@@ -592,6 +619,8 @@ public partial class Assembler
 
                 case ".REGION":
                 case ".ENDREGION":
+                case ".GLOBAL":
+                case ".ENDGLOBAL":
                     tokenLine.Opcode = null;
                     tokenLine.Args = null;
                     break;

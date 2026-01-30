@@ -27,10 +27,18 @@ public partial class Assembler
             rom.AddRange(ProcessTokens(ref lineNum, fxd));
 
             var banks = AllRegions.Values.OfType<BankBuffer>().OrderBy(b => b.BankId).ToArray();
-            for (int i = 0; i < banks.Length; i++)
+            if (banks.Length != 0)
             {
-                CurrentRegion = banks[i];
-                rom.AddRange(ProcessTokens(ref lineNum, banks[i]));
+                for (int i = 0; i < banks.Length; i++)
+                {
+                    CurrentRegion = banks[i];
+                    rom.AddRange(ProcessTokens(ref lineNum, banks[i]));
+                }
+            }
+            else
+            {
+                var bank = AllRegions["BANK_0"] = new BankBuffer();
+                rom.AddRange(ProcessTokens(ref lineNum, bank));
             }
 
             if (!AllRegions.TryGetValue("SPRITE_ATLAS", out var sprt))

@@ -5,7 +5,6 @@
 .ENDENUM
 
 .REGION FIXED
-
 .STR 9, 15 "PRESS ANY BUTTON"
 
 MainLoop:
@@ -33,6 +32,6 @@ IllegalOamCursor: ; Trigger a segfault by setting the OAM cursor to a value outs
 
 ProtectedRegionWrite: ; Trigger a segfault by trying to write to the reserved RAM region
     LDI r0, 0xFF
-    ALT STM r0, $FFFF
+    STM r0, $FFFF
     HALT
 .ENDREGION

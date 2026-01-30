@@ -17,33 +17,50 @@ public partial class Assembler
     private ScopeLevel GetCurrentScope() =>
         CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
 
-    private bool TryDefineLabel(string name, ushort address, int lineNumber)
+    private bool TryDefineLabel(string name, ushort address, int lineNumber, bool global = false)
     {
         VerifyBiosPrefix(name, lineNumber);
         var currentScope =
-            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
-        return currentScope.TryDefineLabel(name, address);
+            (CurrentRegion == null || global) ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+        int offset;
+        switch (CurrentRegion)
+        {
+            case FixedRegionBuffer:
+                offset = 0;
+                break;
+            case BankBuffer:
+                var bnk = CurrentRegion as BankBuffer;
+                offset = 18 * 1024;
+                break;
+            case SpriteAtlasBuffer:
+                offset = (18 * 1024) + (32 * 1024);
+                break;
+            default:
+                offset = 0;
+                break;
+        }
+        return currentScope.TryDefineLabel(name, (ushort)(address + offset));
     }
 
     private bool TryResolveLabel(string name, out ushort address) =>
         GetCurrentScope().TryResolveLabel(name, out address);
 
-    private bool TryDefineConstant(string name, ushort value, int lineNumber)
+    private bool TryDefineConstant(string name, ushort value, int lineNumber, bool global = false)
     {
         VerifyBiosPrefix(name, lineNumber);
         var currentScope =
-            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+            (CurrentRegion == null || global) ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
         return currentScope.TryDefineConstant(name, value);
     }
 
     private bool TryResolveConstant(string name, out ushort value) =>
         GetCurrentScope().TryResolveConstant(name, out value);
 
-    private bool TryDefineEnum(string name, int lineNumber)
+    private bool TryDefineEnum(string name, int lineNumber, bool global = false)
     {
         VerifyBiosPrefix(name, lineNumber);
         var currentScope =
-            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+            (CurrentRegion == null || global) ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
         return currentScope.TryDefineEnum(name);
     }
 
@@ -53,12 +70,13 @@ public partial class Assembler
         string enumName,
         string memberName,
         ushort value,
-        int lineNumber
+        int lineNumber,
+        bool global = false
     )
     {
         VerifyBiosPrefix(memberName, lineNumber);
         var currentScope =
-            CurrentRegion == null ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
+            (CurrentRegion == null || global) ? IRomBuffer.GlobalScope : CurrentRegion.CurrentScope;
         return currentScope.TryDefineEnumMember(enumName, memberName, value);
     }
 
