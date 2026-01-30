@@ -248,16 +248,17 @@ MemCopy:
     .DEF PasteStartPtr $E802
     .DEF AmountParam $E804
 
-    LDI r3, AmountParam
+    LDM r3, AmountParam
     ICMP r3, 0
     JEQ Return
 
-    LDI r0, CopyStartPtr
-    LDI r1, PasteStartPtr
+    LDM r0, CopyStartPtr
+    LDM r1, PasteStartPtr
 
     Loop:
-        ALT LDP r2, r0
-        ALT STP r2, r1
+        STP r0, r1
+        INC r0
+        INC r1
 
         DEC r3
         JNE Loop
