@@ -28,6 +28,10 @@ internal class Motherboard : IMotherboard
     private readonly InputHandler _inputDevice;
     private readonly DebugOutput? _dbg;
 
+    public event Action? SaveRequested;
+
+    public void InvokeSave() => SaveRequested?.Invoke();
+
     private bool _isPoweringOn = true;
 
     private enum BiosFlagAddresses : ushort
@@ -494,6 +498,8 @@ internal class Motherboard : IMotherboard
             _instrumentTable.ReadByte(addr + 3)
         );
     }
+
+    public ReadOnlySpan<byte> SaveRam() => _ram.View(Memory.SaveRamStart, 512);
 
     public void Step()
     {

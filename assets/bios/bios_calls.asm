@@ -223,3 +223,14 @@ LutGetPtr:
     STM r0, $E805
     RET
 .ENDSCOPE
+
+MemCopy:
+.SCOPE
+    .DEF CopyStartPtr $E800
+    .DEF PasteStartPtr $E802
+    .DEF AmountParam $E804
+
+    LDI r0, CopyStartPtr
+    LDI r1, PasteStartPtr
+    ;TODO: Finish this
+.ENDSCOPE

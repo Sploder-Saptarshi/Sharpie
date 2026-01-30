@@ -703,6 +703,11 @@ internal partial class Cpu
         CursorPosY = y;
     }
 
+    private partial void Execute_SAVE(byte opcode, ref ushort pcDelta)
+    {
+        _mobo.InvokeSave();
+    }
+
     private partial void Execute_INSTR(byte opcode, ref ushort pcDelta)
     {
         var instIdReg = IndexFromOpcode(opcode);

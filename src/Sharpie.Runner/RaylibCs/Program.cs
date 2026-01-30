@@ -6,6 +6,7 @@ var video = new RaylibVideoOutput();
 var audio = new RaylibAudioOutput();
 var input = new RaylibInputHandler();
 var logger = new RaylibDebugOutpug(20);
+var saveHandler = new RaylibSaveHandler();
 
 var biosBytes = BiosLoader.GetEmbeddedBiosBinary();
 byte[]? romBytes = null;
@@ -66,6 +67,8 @@ while (!video.ShouldCloseWindow())
             {
                 romBytes = File.ReadAllBytes(filePath);
                 TryLoadCart();
+                saveHandler.SavePath = Path.ChangeExtension(filePath, ".sav");
+                emulator.Save += saveHandler.SaveToDisk;
             }
         }
         catch (Exception e)
@@ -100,6 +103,7 @@ while (!video.ShouldCloseWindow())
     logger.LogAll();
 }
 
+emulator.Save -= saveHandler.SaveToDisk;
 video.Cleanup();
 audio.Cleanup();
 
