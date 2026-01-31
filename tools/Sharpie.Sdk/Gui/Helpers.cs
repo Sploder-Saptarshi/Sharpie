@@ -19,6 +19,21 @@ public static class Helpers
         return fontData;
     }
 
+#if Windows
+    public unsafe static byte[] GetEmbeddedIcon()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream("icon.png");
+
+        if (stream == null)
+            Console.WriteLine("Could not find an embedded .png file.");
+
+        byte[] ba = new byte[stream.Length];
+        stream.ReadExactly(ba, 0, ba.Length);
+        return ba;
+    }
+#endif
+
     public static void BatchPngToAssembly(
         IEnumerable<string> inputFilePaths,
         ProjectManifest manifest,

@@ -30,6 +30,29 @@ public class MainScreen
         Raylib.InitWindow(450, 600, "Sharpie SDK");
         rlImGui.Setup();
 
+#if Windows
+        var iconBytes = Helpers.GetEmbeddedIcon(); // windows gonna catch these hands
+        unsafe
+        {
+            fixed (byte* pData = iconBytes)
+            {
+                byte[] ext = { (byte)'.', (byte)'p', (byte)'n', (byte)'g' };
+                fixed (byte* pExt = ext)
+                {
+                    var icon = Raylib.LoadImageFromMemory((sbyte*)pExt, pData, iconBytes.Length);
+                    if (Raylib.IsImageValid(icon))
+                    {
+                        Raylib.SetWindowIcon(icon);
+                        Raylib.UnloadImage(icon);
+                    }
+                }
+            }
+        }
+#elif Linux
+        var icon = Raylib.LoadImage(Path.Combine(Directory.GetCurrentDirectory(), "sdk.png"));
+        Raylib.SetWindowIcon(icon);
+        Raylib.UnloadImage(icon);
+#endif
         while (!Raylib.WindowShouldClose())
         {
             Raylib.BeginDrawing();
