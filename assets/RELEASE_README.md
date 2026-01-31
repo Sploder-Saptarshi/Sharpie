@@ -1,12 +1,12 @@
-# Sharpie Console v0.1 (Alpha)
+# Sharpie Console v0.2 (Beta)
 
 Thank you for downloading the Sharpie fantasy console! No, seriously, your support means everything.
 The program you have downloaded is a *runner* for the Sharpie console, specifically built on Raylib and tested extensively. It allows up to two players and has full controller support.
 
 ## Getting Started
 
-1. **Windows:** Run `Sharpie.exe`.
-2. **Linux:** Run `./Sharpie` (maybe you will need to `chmod +x` it), or fill in the paths of the included `.desktop` file and run that.
+1. **Windows:** Run the `.exe`.
+2. **Linux:** Run the program (maybe you will need to `chmod +x` it), or fill in the paths of the included `.desktop` file and run that.
 3. **MacOS:** MacOS is currently not supported, but it might be in the future. Stick around!
 
 All necessary assets are included either in the `zip` you just downloaded or embedded into the executable itself, so no need to worry about dependencies!
@@ -24,11 +24,17 @@ Currently, the keyboard controls Player 1, and the first detected controller con
 ## Loading ROMs
 To load a ROM, you can either start the Sharpie by dragging the `.shr` file on it or start the program and then drag the ROM in. However, to load another cartridge, you must restart the console.
 
-Since this is a 0.1 release, there are not many ROMs, but a few example ones showcasing the Sharpie's capability exist in the `samples` directory in GitHub, and there will be more over time that you will be able to download, either in assembly form to study for yourself or (soon) in binary form to run.
-
 ## Developing ROMs
-The SDK is still in its very early stage. A GUI is underway, but, for now, you can download the appropriate SDK binary and drag-and-drop a `.asm` file on it to assemble it into a Sharpie ROM.
-Sprite and music editors will also be created in due time.
+The SDK now has a dedicated GUI and the CLI mode got a major overhaul: You now use project manifests in JSON format to assemble ROMs. In these manifests you define:
+
+- The palette
+- Title & author metadata
+- Whether you're compiling as firmware
+- Input & output paths
+
+You can also edit those fields manually from the GUI.
+
+Keep in mind the GUI is very brittle and I'm planning to create a new version from scratch in Godot.
 
 ## Support
 If you encounter any issues with the Runner or the SDK or have any suggestions, please open an issue over at [the GitHub repository](https://github.com/ChristosMaragkos/Sharpie).

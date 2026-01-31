@@ -80,11 +80,15 @@ jobs:
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             cp assets/icons/icon.png ./pub-runner/
             cp assets/linux/sharpie-raylib.desktop ./pub-runner/
+            cp assets/icons/sdk.png ./pub-sdk/
           fi
+
+          mkdir ./pub-sdk/docs/
+          cp tools/Sharpie.Sdk/docs/ISA_REFERENCE.md ./pub-sdk/docs/
+          cp tools/Sharpie.Sdk/docs/SYSCALL_REFERENCE.md ./pub-sdk/docs/
 
           mv ./pub-sdk/${{ matrix.sdk_bin }} ./pub-sdk/Sharpie-SDK$EXT
           cp LICENSE.md ./pub-sdk/LICENSE.txt     # Add License to SDK
-          echo "Sharpie SDK v0.1 - Drag a .asm file onto Sharpie-SDK$EXT to create a .shr cartridge." > ./pub-sdk/README.txt
 
           if [[ "${{ matrix.rid }}" == win* ]]; then
             7z a "sharpie-runner-${{ matrix.rid }}.zip" ./pub-runner/*
@@ -106,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -145,15 +149,15 @@ jobs:
     needs: [build, build-web]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
