@@ -46,11 +46,28 @@ internal partial class Cpu
                 break;
             }
 
-            case 0x13: // STR
+            case 0x13: // STA
             {
                 var (x, y) = ReadRegisterArgs();
                 var value = (byte)GetRegister(x);
                 var addr = GetRegister(y);
+                _mobo.WriteByte(addr, value);
+                break;
+            }
+
+            case 0x14: // LDS
+            {
+                var (x, y) = ReadRegisterArgs();
+                var addr = _sp + (short)GetRegister(y);
+                GetRegister(x) = _mobo.ReadByte(addr);
+                break;
+            }
+
+            case 0x15: // STS
+            {
+                var (x, y) = ReadRegisterArgs();
+                var value = (byte)GetRegister(x);
+                var addr = _sp + (short)GetRegister(y);
                 _mobo.WriteByte(addr, value);
                 break;
             }

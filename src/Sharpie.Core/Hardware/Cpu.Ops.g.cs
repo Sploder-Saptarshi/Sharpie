@@ -43,6 +43,16 @@ internal partial class Cpu {
                 Execute_STA(opcode, ref pcDelta);
                 break;
 
+            case 0x14: //LDS
+                pcDelta = 2;
+                Execute_LDS(opcode, ref pcDelta);
+                break;
+
+            case 0x15: //STS
+                pcDelta = 2;
+                Execute_STS(opcode, ref pcDelta);
+                break;
+
             case 0x40: //ADD
                 pcDelta = 2;
                 Execute_ADD(opcode, ref pcDelta);
@@ -398,6 +408,8 @@ internal partial class Cpu {
     private partial void Execute_STM(byte opcode, ref ushort pcDelta);
     private partial void Execute_STP(byte opcode, ref ushort pcDelta);
     private partial void Execute_STA(byte opcode, ref ushort pcDelta);
+    private partial void Execute_LDS(byte opcode, ref ushort pcDelta);
+    private partial void Execute_STS(byte opcode, ref ushort pcDelta);
     private partial void Execute_ADD(byte opcode, ref ushort pcDelta);
     private partial void Execute_SUB(byte opcode, ref ushort pcDelta);
     private partial void Execute_MUL(byte opcode, ref ushort pcDelta);

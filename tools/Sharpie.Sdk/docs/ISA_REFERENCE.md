@@ -8,6 +8,8 @@
 | `0x30n` | **STM** | `R, W` | 3 | Store word from R to address W. | Store the low byte of R to W. |
 | `0x12` | **STP** | `R, R` | 2 | Save word from `[R1]` in the address within R2. | Store the low byte of `[R1]` in the address within R2. |
 | `0x13` | **STA** | `R, R` | 2 | Store word from R1 to the address contained in R2. | Store the low byte of R1 at the address contained in R2. |
+| `0x14` | **LDS** | `R, R` | 2 | Load word from `[SP + R2]` (signed) into R1. | Load byte from `[SP + R2]` (signed) into R1. |
+| `0x15` | **STS** | `R, R` | 2 | Store word from R1 to SP + R2 (signed). | Store the low byte of R1 SP + R2 (signed). |
 | `0x40` | **ADD** | `R, R` | 2 | R1 = R1 + R2. Updates Z, N, C, V. |  |
 | `0x41` | **SUB** | `R, R` | 2 | R1 = R1 - R2. Updates Z, N, C, V. |  |
 | `0x42` | **MUL** | `R, R` | 2 | R1 = R1 * R2. Sets C/V if result > 65535. |  |
