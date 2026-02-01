@@ -8,8 +8,8 @@ internal partial class Ppu
     private const int DisplayWidth = 256;
     private const int FrameSize = DisplayWidth * DisplayHeight;
 
-    private const int WorldHeight = ushort.MaxValue;
-    private const int WorldWidth = ushort.MaxValue;
+    private const int WorldHeight = ushort.MaxValue + 1;
+    private const int WorldWidth = ushort.MaxValue + 1;
 
     private const ushort SpriteMemoryStart = Memory.SpriteAtlasStart;
 
