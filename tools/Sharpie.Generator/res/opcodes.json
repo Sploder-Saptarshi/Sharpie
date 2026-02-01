@@ -19,8 +19,8 @@
     { "hex": "0x45", "name": "AND",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Bitwise AND.", "alt": "" },
     { "hex": "0x46", "name": "OR",     "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Bitwise OR.", "alt": "" },
     { "hex": "0x47", "name": "XOR",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Bitwise XOR.", "alt": "" },
-    { "hex": "0x48", "name": "SHL",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Logical shift left R1 by (R2 & 0xF).", "alt": "" },
-    { "hex": "0x49", "name": "SHR",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Logical shift right R1 by (R2 & 0xF).", "alt": "" },
+    { "hex": "0x48", "name": "SHL",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Bitwise shift left R1 by (R2 & 0xF).", "alt": "" },
+    { "hex": "0x49", "name": "SHR",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Bitwise shift right R1 by (R2 & 0xF).", "alt": "" },
     { "hex": "0x4A", "name": "CMP",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Internal subtraction to set flags.", "alt": "" },
     { "hex": "0x4B", "name": "ADC",    "len": 2, "logic": null , "words": 2 , "pattern": "RR", "desc": "Add with Carry: R1 + R2 + C.", "alt": "" },
   

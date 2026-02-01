@@ -18,8 +18,8 @@
 | `0x45` | **AND** | `R, R` | 2 | Bitwise AND. |  |
 | `0x46` | **OR** | `R, R` | 2 | Bitwise OR. |  |
 | `0x47` | **XOR** | `R, R` | 2 | Bitwise XOR. |  |
-| `0x48` | **SHL** | `R, R` | 2 | Logical shift left R1 by (R2 & 0xF). |  |
-| `0x49` | **SHR** | `R, R` | 2 | Logical shift right R1 by (R2 & 0xF). |  |
+| `0x48` | **SHL** | `R, R` | 2 | Bitwise shift left R1 by (R2 & 0xF). |  |
+| `0x49` | **SHR** | `R, R` | 2 | Bitwise shift right R1 by (R2 & 0xF). |  |
 | `0x4A` | **CMP** | `R, R` | 2 | Internal subtraction to set flags. |  |
 | `0x4B` | **ADC** | `R, R` | 2 | Add with Carry: R1 + R2 + C. |  |
 | `0x50` | **INC** | `R` | 2 | Increment register R by 1. |  |
