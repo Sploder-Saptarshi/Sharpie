@@ -37,13 +37,13 @@
 | `0x68` | **ICMP** | `R, B` | 3 | Compare R with immediate byte B. | Compare word at `[R]` with byte B in memory. |
 | `0x69` | **DINC** | `R` | 2 | Increment word at memory address `[R]`. |  |
 | `0x6A` | **DDEC** | `R` | 2 | Decrement word at memory address `[R]`. |  |
-| `0x70` | **JMP** | `W` | 3 | Unconditional jump to address W. |  |
-| `0x71` | **JEQ** | `W` | 3 | Jump if Zero (equal). |  |
-| `0x72` | **JNE** | `W` | 3 | Jump if Not Zero (not equal). |  |
-| `0x73` | **JGT** | `W` | 3 | Jump if Greater Than. |  |
-| `0x74` | **JLT** | `W` | 3 | Jump if Less Than. |  |
-| `0x75` | **JGE** | `W` | 3 | Jump if Greater or Equal. |  |
-| `0x76` | **JLE** | `W` | 3 | Jump if Less or Equal. |  |
+| `0x70` | **JMP** | `W` | 3 | Unconditional jump to address W. | Uses register instead of immediate word |
+| `0x71` | **JEQ** | `W` | 3 | Jump if Zero (equal). | Uses register instead of immediate word |
+| `0x72` | **JNE** | `W` | 3 | Jump if Not Zero (not equal). | Uses register instead of immediate word |
+| `0x73` | **JGT** | `W` | 3 | Jump if Greater Than. | Uses register instead of immediate word |
+| `0x74` | **JLT** | `W` | 3 | Jump if Less Than. | Uses register instead of immediate word |
+| `0x75` | **JGE** | `W` | 3 | Jump if Greater or Equal. | Uses register instead of immediate word |
+| `0x76` | **JLE** | `W` | 3 | Jump if Less or Equal. | Uses register instead of immediate word |
 | `0x77` | **CALL** | `W` | 3 | Push PC+3 to stack and jump to W. | Push PC+3 to stack and jump to the address contained in R1. |
 | `0x78` | **RET** | `-` | 1 | Pop address from stack and jump back. |  |
 | `0x79` | **PUSH** | `R` | 2 | Push value in R onto stack. | Push the low byte of R onto the stack |

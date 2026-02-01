@@ -237,6 +237,68 @@ internal partial class Cpu
                 break;
             }
 
+            case 0x70: // JMP
+            {
+                ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x71: // JEQ
+            {
+                if (IsFlagOn(CpuFlags.Zero))
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x72: // JNE
+            {
+                if (!IsFlagOn(CpuFlags.Zero))
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x73: // JGT
+            {
+                var zero = IsFlagOn(CpuFlags.Zero);
+                var negative = IsFlagOn(CpuFlags.Negative);
+                var overflow = IsFlagOn(CpuFlags.Overflow);
+
+                if (!zero && negative == overflow)
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x74: // JLT
+            {
+                var negative = IsFlagOn(CpuFlags.Negative);
+                var overflow = IsFlagOn(CpuFlags.Overflow);
+
+                if (negative != overflow)
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x75: // JGE
+            {
+                var negative = IsFlagOn(CpuFlags.Negative);
+                var overflow = IsFlagOn(CpuFlags.Overflow);
+
+                if (negative == overflow)
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
+            case 0x76: // JLE
+            {
+                var zero = IsFlagOn(CpuFlags.Zero);
+                var negative = IsFlagOn(CpuFlags.Negative);
+                var overflow = IsFlagOn(CpuFlags.Overflow);
+
+                if (zero || negative != overflow)
+                    ComputeAndJump(ref pcDelta);
+                break;
+            }
+
             case 0x77: // CALL
             {
                 pcDelta = 0;
@@ -332,5 +394,14 @@ internal partial class Cpu
                 pcDelta = 1;
                 break;
         }
+    }
+
+    private void ComputeAndJump(ref ushort pcDelta)
+    {
+        pcDelta = 0;
+        var x = _mobo.ReadWord(_pc + 1) & 0x0F;
+        var target = GetRegister(x);
+        _pc = target;
+        pcDelta = 0;
     }
 }
