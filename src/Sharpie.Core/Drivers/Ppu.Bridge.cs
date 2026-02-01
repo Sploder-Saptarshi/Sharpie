@@ -6,7 +6,7 @@ internal partial class Ppu
 
     public byte[] GetFrame()
     {
-        for (int i = 0; i <= FrameSize - 1; i++)
+        for (int i = 0; i < FrameSize; i++)
         {
             var colorIndex = _vRam.ReadByte(i);
             var realIndex = _mobo.ReadByte(Memory.ColorPaletteStart + colorIndex);
