@@ -6,3 +6,5 @@ This directory contains sample cartridges for the Sharpie to serve as learning m
 - **bluescreen.asm**: Tests the segfault functions of the sharpie BIOS. Each arrow key triggers a different segfault. 
 
 - **save_test.asm**: Saves the numbers 0-9 on disk.
+
+- **mario_sprite.asm**: Simple palette swap demo. Press A to swap to Luigi and B to swap to fire flower form.
