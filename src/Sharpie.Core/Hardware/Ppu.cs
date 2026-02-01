@@ -204,7 +204,6 @@ internal partial class Ppu
 
     private void FillBuffer(byte colorIndex)
     {
-        Span<byte> vramSpan = _vRam.Slice(0, FrameSize);
-        vramSpan.Fill(colorIndex);
+        _vRam.Fill(colorIndex);
     }
 }

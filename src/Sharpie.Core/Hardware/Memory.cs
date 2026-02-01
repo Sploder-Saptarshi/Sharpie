@@ -93,6 +93,8 @@ internal class Memory
 
     public void ClearRange(int from, int amount) => Array.Clear(_contents, from, amount);
 
+    public void Fill(byte value) => Array.Fill(_contents, value);
+
     public void FillRange(int startIndex, int amount, byte value) =>
         Array.Fill(_contents, value, startIndex, amount);
 
