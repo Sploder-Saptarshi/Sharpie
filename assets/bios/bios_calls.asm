@@ -256,7 +256,7 @@ MemCopy:
     LDM r1, PasteStartPtr
 
     Loop:
-        STP r0, r1
+        ALT STP r0, r1 ; Save [r0] to the address in r1
         INC r0
         INC r1
 
