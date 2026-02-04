@@ -1,6 +1,5 @@
 using Sharpie.Sdk.Meta;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 #if Windows
 using System.Reflection;
@@ -76,22 +75,6 @@ public static class Helpers
 
         using var image = Image.Load<Rgba32>(inputFilePath);
 
-        var meta = image.Metadata.GetPngMetadata();
-        if (meta.ColorType != PngColorType.Palette)
-            throw new InvalidOperationException("PNG must be indexed (palette-based).");
-
-        var clrTable = meta.ColorTable;
-        if (!clrTable.HasValue)
-            throw new InvalidOperationException("Indexed PNG has no color table.");
-
-        var palette = clrTable.Value.Span;
-
-        if (palette.Length == 0)
-            throw new InvalidOperationException("Indexed PNG has no color palette.");
-
-        if (palette.Length > 16)
-            throw new InvalidOperationException("PNG palette may not exceed 16 colors.");
-
         var width = image.Width;
         var height = image.Height;
 
@@ -151,10 +134,10 @@ public static class Helpers
         var bestIndex = 0;
         var bestDist = double.MaxValue;
 
-        for (var i = 0; i < manifest.Palette.Length; i++)
+        for (var i = 1; i < manifest.Palette.Length; i++)
         {
             var masterIdx = manifest.Palette[i];
-            if (masterIdx == 0xFF)
+            if (masterIdx >= 32)
                 masterIdx = i; // Same logic as the bootloader
 
             var (r, g, b) = Constants.MasterPalette[masterIdx];
@@ -163,7 +146,7 @@ public static class Helpers
             if (dist < bestDist)
             {
                 bestDist = dist;
-                bestIndex = i;
+                bestIndex = masterIdx < 16 ? masterIdx : masterIdx - 16;
             }
         }
 
