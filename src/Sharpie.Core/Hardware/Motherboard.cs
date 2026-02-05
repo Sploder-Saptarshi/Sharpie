@@ -28,9 +28,9 @@ internal class Motherboard : IMotherboard
     private readonly InputHandler _inputDevice;
     private readonly DebugOutput? _dbg;
 
-    public event Action? SaveRequested;
+    public event Action<bool>? SaveRequested;
 
-    public void InvokeSave() => SaveRequested?.Invoke();
+    public void InvokeSave(bool append = false) => SaveRequested?.Invoke(append);
 
     private bool _isPoweringOn = true;
 

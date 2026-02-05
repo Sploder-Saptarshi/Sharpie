@@ -17,7 +17,7 @@ internal interface IMotherboard
     void SetTextAttributes(byte attributes);
     void DrawChar(int x, int y, byte charCode);
 
-    void InvokeSave();
+    void InvokeSave(bool append = false);
 
     void PlayNote(
         byte channel,
