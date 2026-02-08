@@ -266,3 +266,29 @@ MemCopy:
     Return:
         RET
 .ENDSCOPE
+
+; SYS_PAL_RESET
+;
+; Address: $FAE2
+;
+; Resets the palette to its default (color 0 points to color 0, color 1 to color 1, and so on.)
+;
+; Parameters:
+; None.
+;
+; This subroutine overwrites these registers:
+; None.
+ResetPalette:
+.SCOPE
+    PUSH r4
+    LDI r4, 0
+
+    Loop:
+        SWC r4, r4
+        INC r4
+        ICMP r4, 32
+        JLT Loop
+
+    POP r4
+    RET
+.ENDSCOPE

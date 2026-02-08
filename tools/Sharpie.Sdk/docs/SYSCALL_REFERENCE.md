@@ -81,3 +81,8 @@ Copies (byteAmount) bytes from the starting address to the end address. This ove
 - `R2`
 - `R3`
 
+## `SYS_PAL_RESET`
+**Address:** `$FAE2`
+
+Resets the palette to its default (color 0 points to color 0, color 1 to color 1, and so on.)
+
